@@ -11,6 +11,7 @@ Please follow the code conventions of the project.
 ## Code conventions
 
 The code conventions are described and enforced by [pre-commit hooks](https://pre-commit.com/hooks.html) to maintain consistency across the code base.
+The hooks are declared in the [.pre-commit-config.yaml](.pre-commit-config.yaml) file.
 
 Set the git hooks (pre-commit and commit-msg types):
 
