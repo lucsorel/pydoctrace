@@ -1,9 +1,13 @@
 [tool.poetry]
-name = "doctrace"
+name = "pydoctrace"
 version = "0.1.0"
 description = "Generate sequence diagrams by tracing Python code execution"
-authors = ["Luc Sorel-Giffo"]
+keywords = ["sequence diagram", "PlantUML", "documentation", "tracing", "doc-as-code"]
 readme = "README.md"
+repository = "https://github.com/lucsorel/pydoctrace"
+authors = ["Luc Sorel-Giffo"]
+maintainers = ["Luc Sorel-Giffo"]
+license = "MIT"
 
 [tool.poetry.dependencies]
 python = "^3.8"
