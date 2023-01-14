@@ -133,3 +133,8 @@ cython_debug/
 .ionide
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,python
+
+# do not version PlantUML files
+*.puml
+# do not version bibliography files
+biblio/
