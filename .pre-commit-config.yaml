@@ -17,6 +17,7 @@ repos:
     -   id: name-tests-test
         # tests match test_.*\.py
         args: [--pytest-test-first]
+        exclude: tests.modules.*
 
 -   repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
     rev: v9.3.0

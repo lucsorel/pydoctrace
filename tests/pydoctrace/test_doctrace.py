@@ -1,6 +1,6 @@
 from pydoctrace.doctrace import trace_to_puml
 
-from tests.pydoctrace.test_ecoindex import ecoindex
+from tests.modules.ecoindex import ecoindex
 
 
 def test_trace_to_puml():
