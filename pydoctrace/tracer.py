@@ -82,7 +82,8 @@ class SequenceTracer:
             if len(self.callers_stack) == 0:
                 self.exporter.write_tracing_start(call)
             else:
-                self.exporter.write_start_call(self.callers_stack[-1]._replace(line_index=frame.f_lineno), call)
+                # self.exporter.write_raw_content(f"' {frame} {frame.f_back=}")
+                self.exporter.write_start_call(self.callers_stack[-1]._replace(line_index=frame.f_back.f_lineno), call)
 
             # adds the call to the calls stack and returns the call tracing function to detect 'return' events
             self.callers_stack.append(call)

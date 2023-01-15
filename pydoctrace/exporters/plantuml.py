@@ -7,6 +7,8 @@ from pydoctrace.exporters import Exporter
 HEADER_TPL = '''@startuml {diagram_name}
 skinparam BoxPadding 10
 skinparam ParticipantPadding 5
+skinparam NoteBackgroundColor Cornsilk
+skinparam NoteBorderColor Sienna
 hide footbox
 '''
 
@@ -17,6 +19,8 @@ note right: line {called.line_index}
 
 CALL_START_TPL = '''
 {caller.function_name} -> {called.function_name} ++
+note left: line {caller.line_index}
+note right: line {called.line_index}
 '''
 
 CALL_END_TPL = '''
