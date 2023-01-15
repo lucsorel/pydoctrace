@@ -22,7 +22,13 @@ def to_quantile_position(value: float, quantiles: tuple) -> float:
         # value is above the max threshold -> returns the maximum note (20)
         interpolated_position = len(quantiles) - 1
 
+    acknowledge_interpolation(interpolated_position, quantiles)
     return interpolated_position
+
+
+def acknowledge_interpolation(interpolated_position: float, quantiles: tuple):
+    # assert and returns nothing
+    assert 0 <= interpolated_position <= len(quantiles)
 
 
 def ecoindex(dom_elements_nb: int, requests_nb: int, size_kb: float) -> float:
@@ -30,4 +36,9 @@ def ecoindex(dom_elements_nb: int, requests_nb: int, size_kb: float) -> float:
     requests_quantile: float = to_quantile_position(requests_nb, REQUESTS_NB_QUANTILES)
     size_quantile: float = to_quantile_position(size_kb, SIZES_KB_QUANTILES)
 
-    return 100 - (5 * (3 * dom_quantile + 2 * requests_quantile + size_quantile) / 6)
+    return validate_ecoindex(100 - (5 * (3 * dom_quantile + 2 * requests_quantile + size_quantile) / 6))
+
+
+def validate_ecoindex(ecoscore: float) -> float:
+    assert 0 <= ecoscore <= 100
+    return ecoscore
