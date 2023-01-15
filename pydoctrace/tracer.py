@@ -1,7 +1,7 @@
 from collections import deque
 from pathlib import Path
 from sys import settrace
-from typing import List
+from typing import Any, Callable, List
 
 from pydoctrace.domain.sequence import Call
 from pydoctrace.exporters import Exporter
@@ -37,27 +37,30 @@ def module_name_from_filepath(script_filepath: str) -> str:
 
 
 class SequenceTracer:
+    '''
+    Traces the execution of a callable object and pushes events to the given exporter.
+    '''
     def __init__(self, exporter: Exporter):
         self.exporter = exporter
         self.callers_stack: List[Call] = deque()
 
-    def runfunc(self, func, *args, **kwargs):
-        if func is None:
-            raise ValueError('No function was given, nothing to execute not to trace')
+    def runfunc(self, func: Callable, *args, **kwargs) -> Any:
+        '''
+        Runs the given function with the given positional and keyword arguments and traces the calls sequence.
+        '''
 
-        result = None
-        # declares the tracing callbacks to handle calls
+        # ensures that a callable object has been passed
+        if func is None or not callable(func):
+            raise ValueError('A function or a callable object must be passed to trace its execution')
+
+        # declares the tracing callbacks to trace calls, performs and traces the call, then removes the tracer
         settrace(self.globaltrace)
         try:
-            result = func(*args, **kwargs)
+            return func(*args, **kwargs)
         finally:
             settrace(None)
-        return result
 
-    def should_ignore(self, *args):
-        return False
-
-    def globaltrace(self, frame, why: str, arg):
+    def globaltrace(self, frame, why: str, arg: Any):
         '''
         Handler for call events.
 
@@ -65,8 +68,6 @@ class SequenceTracer:
         - a custom tracing function to trace the execution of the block
         - None if the execution block should be ignored
         '''
-
-        # self.exporter.write_raw_content(f"' g {frame=}\n")
 
         if why == 'call':
             # constructs the call
@@ -77,15 +78,22 @@ class SequenceTracer:
             function_name = frame.f_code.co_name
             call = Call(fq_module_text, tuple(fq_module_text.split('.')), function_name, line_index)
 
+            # starts the tracing or handle an intermediary call
             if len(self.callers_stack) == 0:
                 self.exporter.write_tracing_start(call)
             else:
                 self.exporter.write_start_call(self.callers_stack[-1]._replace(line_index=frame.f_lineno), call)
+
+            # adds the call to the calls stack and returns the call tracing function to detect 'return' events
             self.callers_stack.append(call)
 
             return self.localtrace
 
-    def localtrace(self, frame, why, arg):
+    def localtrace(self, frame, why: str, arg: Any):
+        '''
+        Handler for events happening within a call:
+        - 'return' event: ends the current call, removes it from the callers stack
+        '''
         if why == 'return':
             # end of the block code: removes the last caller from the stack
             called_end = self.callers_stack.pop()._replace(line_index=frame.f_lineno)
