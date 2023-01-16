@@ -14,10 +14,11 @@ def trace_parse_export(context: Context) -> Iterator[SequenceTracer]:
         exporter.write_header(context.start_module, context.start_function_name)
 
         tracer = SequenceTracer(exporter)
-        yield tracer
-
-        # finalizes the sequence diagram file
-        exporter.write_footer()
+        try:
+            yield tracer
+        finally:
+            # finalizes the sequence diagram file
+            exporter.write_footer()
 
 
 def trace_to_puml(function_to_trace: Callable):
