@@ -11,7 +11,7 @@ Bibliography:
 from contextlib import contextmanager
 from typing import Any, Iterator
 
-from pydoctrace.domain.sequence import Call
+from pydoctrace.domain.sequence import Call, Error
 from pydoctrace.exporters import Exporter
 
 HEADER_TPL = '''@startuml {diagram_name}
@@ -23,12 +23,12 @@ hide footbox
 '''
 
 TRACING_START_TPL = '''
-[o-> {called.function_name}
+[o-> "{called.function_name}"
 note right: line {called.line_index}
 '''
 
 CALL_START_TPL = '''
-{caller.function_name} -> {called.function_name} ++
+"{caller.function_name}" -> "{called.function_name}" ++
 note left: line {caller.line_index}
 note right: line {called.line_index}
 '''
@@ -36,10 +36,23 @@ note right: line {called.line_index}
 CALL_END_TPL = '''
 return {arg}
 note right: line {called.line_index}
+|||
+'''
+
+ERROR_PROPAGATION_TPL = '''
+"{error_caller.function_name}" o<--x "{error_called.function_name}": {error.class_name}\\n{error.message}
+deactivate "{error_called.function_name}"
+note left: line {error_caller.line_index}
+note right: line {error_called.line_index}
 '''
 
 TRACING_END_TPL = '''
-[<- {called.function_name}: {arg}
+[<-- "{called.function_name}": {arg}
+note right: line {called.line_index}
+'''
+
+UNHANDLED_ERROR_END_TPL = '''
+[<-->x "{called.function_name}": {error.class_name}\\n{error.message}
 note right: line {called.line_index}
 '''
 
@@ -68,11 +81,19 @@ class PlantUMLExporter(Exporter):
             return ''
         return arg
 
+    def write_error_propagation(self, error_called: Call, error_caller: Call, error: Error):
+        self.io_sink.write(
+            ERROR_PROPAGATION_TPL.format(error_called=error_called, error_caller=error_caller, error=error)
+        )
+
     def write_return(self, called: Call, arg: Any, **kwargs):
         self.io_sink.write(CALL_END_TPL.format(called=called, arg=self.format_arg_value(arg)))
 
     def write_tracing_end(self, called: Call, arg: Any):
         self.io_sink.write(TRACING_END_TPL.format(called=called, arg=self.format_arg_value(arg)))
+
+    def write_unhandled_error_end(self, called: Call, error: Error):
+        self.io_sink.write(UNHANDLED_ERROR_END_TPL.format(called=called, error=error))
 
     def write_footer(self):
         self.io_sink.write(FOOTER_TPL)

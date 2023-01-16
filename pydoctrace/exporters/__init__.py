@@ -2,7 +2,7 @@ from contextlib import contextmanager
 from io import TextIOBase
 from typing import Any, Iterator
 
-from pydoctrace.domain.sequence import Call
+from pydoctrace.domain.sequence import Call, Error
 
 
 class Exporter:
@@ -51,6 +51,13 @@ class Exporter:
         '''
         raise NotImplementedError()
 
+    def write_error_propagation(self, error_called: Call, error_caller: Call, error: Error):
+        '''
+        Writes the diagram contents corresponding to an error propagating
+        between the called (which raised or propagated the error) and its caller
+        '''
+        raise NotImplementedError()
+
     def write_return(self, called: Call, caller: Call, arg: Any):
         '''
         Writes the diagram contents corresponding to a value returned
@@ -61,6 +68,12 @@ class Exporter:
     def write_tracing_end(self, called: Call, arg: Any):
         '''
         Special case of write_return when the last executed function returns a value.
+        '''
+        raise NotImplementedError()
+
+    def write_unhandled_error_end(self, called: Call, error: Error):
+        '''
+        Special case of write_tracing_end when an error was not handled by an except block.
         '''
         raise NotImplementedError()
 

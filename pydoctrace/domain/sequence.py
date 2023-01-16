@@ -11,3 +11,12 @@ class Call(NamedTuple):
     fq_module_tuple: Tuple[str]
     function_name: str
     line_index: int
+
+
+class Error(NamedTuple):
+    '''
+    Represents an error or an exception that is raised during the code execution.
+    '''
+
+    class_name: str
+    message: str

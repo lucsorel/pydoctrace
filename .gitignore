@@ -138,3 +138,6 @@ cython_debug/
 *.puml
 # do not version bibliography files
 biblio/
+
+# do not version generated PlantUML files
+out/
