@@ -29,8 +29,8 @@ note right: line {called.line_index}
 
 CALL_START_TPL = '''
 "{caller.function_name}" -> "{called.function_name}" ++
-note right: line {called.line_index}
 note left: line {caller.line_index}
+note right: line {called.line_index}
 '''
 
 CALL_END_TPL = '''
@@ -40,7 +40,7 @@ note right: line {called.line_index}
 '''
 
 ERROR_PROPAGATION_TPL = '''
-"{error_caller.function_name}" o<--x "{error_called.function_name}": {error.class_name}\\n{error.message}
+"{error_caller.function_name}" o<--x "{error_called.function_name}": ""{error.class_name}""\\n{error.message}
 deactivate "{error_called.function_name}"
 note right: line {error_called.line_index}
 note left: line {error_caller.line_index}
@@ -52,7 +52,7 @@ note right: line {called.line_index}
 '''
 
 UNHANDLED_ERROR_END_TPL = '''
-[<-->x "{called.function_name}": {error.class_name}\\n{error.message}
+[<-->x "{called.function_name}": ""{error.class_name}""\\n{error.message}
 note right: line {called.line_index}
 '''
 
