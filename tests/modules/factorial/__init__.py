@@ -1,6 +1,6 @@
 from functools import reduce
 
-from tests.modules.factorial.validator import is_positive_int
+from tests.modules.factorial.validator import FactorialError, check_or_wrap_error, is_positive_int, log_factorial_error
 
 
 def factorial_recursive(value: int) -> int:
@@ -46,3 +46,12 @@ def factorial_reduce_multiply(value: int) -> int:
         return agg * value
 
     return reduce(multiply, range(1, value + 1), 1)
+
+
+def factorial_with_checker(value: int):
+    try:
+        return factorial_reduce_multiply(check_or_wrap_error(value, is_positive_int))
+    except FactorialError as factorial_error:
+        log_factorial_error(factorial_error)
+
+        return None

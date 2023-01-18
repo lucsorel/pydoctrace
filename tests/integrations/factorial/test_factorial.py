@@ -4,7 +4,7 @@ from pydoctrace.doctrace import trace_to_puml
 
 from tests.modules.factorial import (
     factorial_recursive, factorial_recursive_check_handled, factorial_recursive_check_unhandled,
-    factorial_reduce_lambda, factorial_reduce_multiply
+    factorial_reduce_lambda, factorial_reduce_multiply, factorial_with_checker
 )
 
 
@@ -33,3 +33,8 @@ def test_factorial_recursive_check_unhandled():
 def test_factorial_recursive_check_handled():
     tracable_factorial_recursive_check_handled = trace_to_puml(factorial_recursive_check_handled)
     assert tracable_factorial_recursive_check_handled('invalid int') == 0
+
+
+def test_factorial_with_checker():
+    tracable_factorial_with_checker = trace_to_puml(factorial_with_checker)
+    assert tracable_factorial_with_checker('int is resting') is None
