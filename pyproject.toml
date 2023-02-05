@@ -2,7 +2,7 @@
 name = "pydoctrace"
 version = "0.1.0"
 description = "Generate sequence diagrams by tracing Python code execution"
-keywords = ["sequence diagram", "PlantUML", "documentation", "tracing", "doc-as-code"]
+keywords = ["sequence diagram", "documentation", "tracing", "doc-as-code", "PlantUML"]
 readme = "README.md"
 repository = "https://github.com/lucsorel/pydoctrace"
 authors = ["Luc Sorel-Giffo"]
@@ -12,12 +12,15 @@ license = "MIT"
 [tool.poetry.dependencies]
 python = "^3.8"
 
-
 [tool.poetry.group.dev.dependencies]
 pytest = "^7.2.0"
+pytest-cov = "^4.0.0"
 
 [tool.poetry.group.lint.dependencies]
 pre-commit = "^2.21.0"
+
+[tool.pytest.ini_options]
+console_output_style = "count"
 
 [tool.isort]
 # maintain consistency with other quality tools
@@ -53,12 +56,10 @@ SPLIT_BEFORE_FIRST_ARGUMENT = true
 [tool.ruff]
 # maintain consistency with other quality tools
 line-length = 120
-
 # activated families of verifications
 select = ["E", "F", "C"]
 # do not check line lengths, yapf and isort already handle them
 extend-ignore = ["E501"]
-
 # automatically fixes when possible
 fix = true
 
