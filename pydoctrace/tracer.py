@@ -10,7 +10,7 @@ It uses sys.settrace which takes:
 
 from collections import deque
 from pathlib import Path
-from sys import settrace
+from sys import gettrace, settrace
 from typing import Any, Callable, List, NamedTuple
 
 from pydoctrace.domain.sequence import Call, Error
@@ -48,7 +48,7 @@ class SequenceTracer:
     - sys.settrace: https://docs.python.org/3/library/sys.html#sys.settrace
     - execution frames: https://docs.python.org/3/reference/datamodel.html#frame-objects
 
-    Useful calls when implementing or debugging features:
+    Useful calls when implementing or debugging features (the contents are added as comments in the exported diagram):
     self.exporter.write_raw_content(f"\n' {event} {frame=} {arg=}\n")
     self.exporter.write_raw_content(f"' {frame.f_back=}\n")
     '''
@@ -67,11 +67,12 @@ class SequenceTracer:
             raise ValueError('A function or a callable object must be passed to trace its execution')
 
         # declares the tracing callbacks to trace calls, performs and traces the call, then removes the tracer
+        tracing_function = gettrace()
         settrace(self.globaltrace)
         try:
             return func(*args, **kwargs)
         finally:
-            settrace(None)
+            settrace(tracing_function)
 
     def write_return_or_exit(self, called_end: Call, arg: Any):
         # the calls stack is empty -> end of the tracing
