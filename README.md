@@ -1,6 +1,53 @@
 # pydoctrace
 
-Generate sequence diagrams by tracing Python code execution
+Generate sequence diagrams by tracing Python code execution.
+
+Here are the sequence diagrams produced by 2 different implementations of the `factorial` function (*n * n-1 * n-2 * ... * 1*).
+One which loops, another one that is recursive:
+
+<table>
+<tbody>
+<tr>
+<td valign="bottom">
+
+```python
+from pydoctrace.doctrace import trace_to_puml
+
+@trace_to_puml
+def factorial_reduce_multiply(value: int) -> int:
+    if value <= 1:
+        return value
+
+    def multiply(agg: int, value: int) -> int:
+        return agg * value
+
+    return reduce(multiply, range(1, value + 1), 1)
+```
+
+</td>
+<td valign="bottom">
+
+```python
+from pydoctrace.doctrace import trace_to_puml
+
+@trace_to_puml
+def factorial_recursive(value: int) -> int:
+    if value <= 1:
+        return value
+
+    return value * factorial_recursive(value - 1)
+```
+
+</td>
+</tr>
+<tr>
+<td valign="top"><pre>tests.modules.factorial.factorial_reduce_multiply.puml</pre>
+<img src="https://www.plantuml.com/plantuml/svg/rP0nYof148Jp_XMDgUYweZwHnqCqUDaXNEY1Z3kzEZZRlVJsW88__WAvKmurCBhDXgcYwgkUD-RKKXNHgB6cNubFaPf-wGeJ3IvUNnibdmhQL2bQgEC9caFWsgchS277bVC-y0xpmSt_ogc58jIExKiVtyXlOhHmnM6dajWl9OhYKfIR40y_RQAUz69v3yJiO1yyOIbYMpa2hANt3piFHdpmmnKTO3523RkzpJ069Xpb0AyauLE2gwtRlNH6AhyhftSmnW1AbfGnlwDEu7m-_pRGOLj09wsvwAWjfFbmq1RKFyzGrtzxFNo5T_OWTmfGYXWf_YScTKOUjoVCilhafJ1r1MKPp8bzgY9y0W00" /></td>
+<td valign="top"><pre>tests.modules.factorial.factorial_recursive.puml</pre>
+<img src="https://www.plantuml.com/plantuml/svg/xP31QYf144Nt_HM5Mz5nv3qJ90JHHNP1oD90AAThjB6dIgghWu8Vdu2OI8o8PEkkwNkuzr2ZPAYMcmX6oLAt4PyZfMwDbOa6ZD-lDwKgQmhlvD8gy1eL6nZBPehU1rv0sJlwdw9QgC8QsGxv_wFuMOp6MAqMAfdzHA8eJ4GvXRZwYObwqZto4eWPtJ9uWbh4vh9nRYQTHsYTqN_bN_nRZiK8D2oMDeGOc63Wt7KLSFKejDlxtKZrORRitLHkAdzIKRAi3ELfUEzskzqNq3y5FXkFYS55el_l8bBsU-UPsKEdS-KbXd1tfj7L8aOAJyIaQEHXleMYM6-zLAPOKL6u4R7FJNGV" /></td>
+</tr>
+</tbody>
+</table>
 
 ## Installation
 
@@ -42,60 +89,16 @@ Some use cases:
 - generally, the sequence diagrams illustrate how the modules and functions interacts; and as such, **they help discussing architecture**
 - tracing code execution can also be useful when teaching computer programming to illustrate how algorithms work
 
-Here are the sequence diagrams produced by 2 different implementations of the `factorial` function (n * n-1 * n-2 * ... * 1).
-One which loops, another one that is recursive:
-
-<table>
-<tbody>
-<tr>
-<td valign="bottom">
-
-```python
-from pydoctrace.doctrace import trace_to_puml
-
-@trace_to_puml
-def factorial_reduce_multiply(value: int) -> int:
-    if value <= 1:
-        return value
-
-    def multiply(agg: int, value: int) -> int:
-        return agg * value
-
-    return reduce(multiply, range(1, value + 1), 1)
-```
-
-</td>
-<td valign="bottom">
-
-```python
-from pydoctrace.doctrace import trace_to_puml
-
-@trace_to_puml
-def factorial_recursive(value: int) -> int:
-    if value <= 1:
-        return value
-
-    return value * factorial_recursive(value - 1)
-```
-
-</td>
-</tr>
-<tr>
-<td valign="top"><img src="https://www.plantuml.com/plantuml/svg/nOz1Qy9048Nlyoi6ho8nebQa5D53RqNeqOECsOakRcR2E045VtmfqbQApQtakFlU-pvcSN8oRwe4fsEKcemgNEfvJI54sMC-lFjVataiOatYN_daBdvJvoKLnxrf8s6bIGrNQdAAwVYxfXRORfNto284XnWOIrNVwHbWeuCNx9LKk5gaj3KEJS7RgaaUwtJfWQWpMjmVV8uf2kCu1sWPu2VlvzNltmY9os_0x05q0c3iZGdc3z8fNA_N_zMEkj5EExfst8qt7msx4J-rYJVFWm6ssET_p6S0fQgpuIiB6pa7t5qmo-fBqCAD2iuoMB24faeV" /></td>
-<td valign="top"><img src="https://www.plantuml.com/plantuml/svg/xS-nQW914CRnVfzYi1MzEqbCa114YtH1I6aHnjivNToRaTdPeE33fn0J4nNBDEcE-txxPtUS3DLo6y4eMUgtudEar6-mDj60yVlhNQdEci87kRGEl4755YQodQ7tWPTGbIV_PwWMwh11jkD-VpA_Yj44w_LI9REVIXI5gIYd4DU_cQWdFP2tGCpeLi4JD2AsaArpS-azG-V2DJkEnGWqB5SsWXYOOEZSHGdN4j3j7YgHccEaAlye_1zMigmCrVduwFRx_HSOd8Eg_266DyNWxYQf1kLrCt_gzIu_U0GFLmwwHiH8uOMO58qyB7PG59kTbzeKQoeADoRskOtk4m00" /></td>
-</tr>
-</tbody>
-</table>
 
 ### How is the code execution traced?
 
 When a function decorated by `pydoctrace` is called:
 
 1. a context manager is created
-2. during which a tracing function is passed to [sys.settrace](https://docs.python.org/3/library/sys.html#sys.settrace), which calls it when different events happens in the execution stack:
+2. during which a **tracing function** is passed to [sys.settrace](https://docs.python.org/3/library/sys.html#sys.settrace), which is called when different events happens in the execution stack:
     - when functions are called
     - when values are returned
-    - when exception are raised or are handled
+    - when exceptions are raised or handled
 3. the sequence diagram is drawn and exported in a file alongside the code execution so that its memory footprint is minimal
 4. once the decorated function stops its execution, the tracing function is removed from the code execution
 
@@ -120,7 +123,7 @@ poetry run pytest -v --cov=pydoctrace --cov-branch --cov-report term-missing --c
 
 # Changelog
 
-* `0.1.0`: first release, PlantUML exporter
+* `0.1.0`: ✨ first release, PlantUML exporter; diagram files are saved in the current working directory
 
 # Licence
 
