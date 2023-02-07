@@ -1,0 +1,72 @@
+[tool.poetry]
+name = "pydoctrace"
+version = "0.1.0"
+description = "Generate sequence diagrams by tracing Python code execution"
+keywords = ["sequence diagram", "documentation", "tracing", "doc-as-code", "PlantUML"]
+readme = "README.md"
+repository = "https://github.com/lucsorel/pydoctrace"
+authors = ["Luc Sorel-Giffo"]
+maintainers = ["Luc Sorel-Giffo"]
+license = "MIT"
+
+[tool.poetry.dependencies]
+python = "^3.8"
+
+[tool.poetry.group.dev.dependencies]
+pytest = "^7.2.0"
+pytest-cov = "^4.0.0"
+
+[tool.poetry.group.lint.dependencies]
+pre-commit = "^2.21.0"
+
+[tool.pytest.ini_options]
+console_output_style = "count"
+
+[tool.isort]
+# maintain consistency with other quality tools
+line_length = 120
+# consistency with yapf: mode 5
+# from third_party import (
+#     lib1, lib2, lib3, lib4,
+#     lib5, etc.
+# )
+multi_line_output = 5
+balanced_wrapping = false
+# TESTS->known_tests: create a specific section for imports of tests modules
+sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER", "TESTS"]
+known_tests = ["tests"]
+
+[tool.yapf]
+based_on_style = "facebook"
+# maintain consistency with other quality tools
+COLUMN_LIMIT = 120
+COALESCE_BRACKETS = false
+DEDENT_CLOSING_BRACKETS = true
+INDENT_DICTIONARY_VALUE = false
+EACH_DICT_ENTRY_ON_SEPARATE_LINE = true
+FORCE_MULTILINE_DICT = true
+JOIN_MULTIPLE_LINES = false
+SPACES_AROUND_DEFAULT_OR_NAMED_ASSIGN = false
+SPLIT_BEFORE_CLOSING_BRACKET = true
+SPLIT_BEFORE_DICT_SET_GENERATOR = true
+SPLIT_COMPLEX_COMPREHENSION = true
+SPLIT_BEFORE_EXPRESSION_AFTER_OPENING_PAREN = true
+SPLIT_BEFORE_FIRST_ARGUMENT = true
+
+[tool.ruff]
+# maintain consistency with other quality tools
+line-length = 120
+# activated families of verifications
+select = ["E", "F", "C"]
+# do not check line lengths, yapf and isort already handle them
+extend-ignore = ["E501"]
+# automatically fixes when possible
+fix = true
+
+# do not check unused imports in __init__.py files (they expose module features)
+[tool.ruff.per-file-ignores]
+"__init__.py" = ["E402"]
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
