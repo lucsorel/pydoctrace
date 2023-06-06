@@ -48,7 +48,7 @@ class SequenceTracer:
     - sys.settrace: https://docs.python.org/3/library/sys.html#sys.settrace
     - execution frames: https://docs.python.org/3/reference/datamodel.html#frame-objects
 
-    Useful calls when implementing or debugging features (the contents are added as comments in the exported diagram):
+    Useful calls when implementing or debugging features (the contents are added as PlantUML comments in the exported diagram):
     self.exporter.write_raw_content(f"\n' {event} {frame=} {arg=}\n")
     self.exporter.write_raw_content(f"' {frame.f_back=}\n")
     '''
