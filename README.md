@@ -1,3 +1,8 @@
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/lucsorel/pydoctrace/main.svg)](https://results.pre-commit.ci/latest/github/lucsorel/pydoctrace/main)
+
+`pydoctrace` uses [pre-commit hooks](https://pre-commit.com/) and [pre-commit.ci continuous integration](https://pre-commit.ci/) to enforce commit messages, code formatting and linting for quality and consistency sake.
+See the [code conventions](#code-conventions) section if you would like to contribute to the project.
+
 # pydoctrace
 
 Generate sequence diagrams by tracing Python code execution.
