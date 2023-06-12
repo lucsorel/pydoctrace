@@ -20,26 +20,26 @@ repos:
         exclude: tests.modules.*
 
 -   repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
-    rev: v9.3.0
+    rev: v9.5.0
     hooks:
     -   id: commitlint
         stages: [commit-msg]
         additional_dependencies: ['@commitlint/config-angular']
 
--   repo: https://github.com/pre-commit/mirrors-isort
-    rev: v5.10.1
+-   repo: https://github.com/PyCQA/isort
+    rev: 5.12.0
     hooks:
     -   id: isort
         additional_dependencies: [toml]
 
--   repo: https://github.com/pre-commit/mirrors-yapf
-    rev: v0.32.0
+-   repo: https://github.com/google/yapf
+    rev: v0.33.0
     hooks:
     -   id: yapf
         name: Yapf
         additional_dependencies: [toml]
 
 -   repo: https://github.com/charliermarsh/ruff-pre-commit
-    rev: v0.0.220
+    rev: v0.0.272
     hooks:
     -   id: ruff
