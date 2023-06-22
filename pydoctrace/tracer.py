@@ -3,7 +3,9 @@ Module responsible for the execution of a function in a tracing context.
 
 It uses sys.settrace which takes:
 - a global tracing function intercepting the calls to block of codes
-- a local tracing function, returned by the global tracing function, handling the line execution
+- a local tracing function, returned by the global tracing function, handling:
+  - the line executions (ignored by this tool)
+  - the exit of the function (when returning a value or raising an error)
 - an exception tracing function, returned by the local tracing function, handling either the error propagation
   or its handling by a try-except block
 '''
@@ -40,7 +42,7 @@ def module_name_from_filepath(script_filepath: str) -> str:
     return None if script_filepath is None else Path(script_filepath).stem
 
 
-class SequenceTracer:
+class ExecutionTracer:
     '''
     Traces the execution of a callable object and pushes events to the given exporter.
 

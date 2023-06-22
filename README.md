@@ -16,9 +16,9 @@ One which loops, another one that is recursive:
 <td valign="bottom">
 
 ```python
-from pydoctrace.doctrace import trace_to_puml
+from pydoctrace.doctrace import trace_to_sequence_puml
 
-@trace_to_puml
+@trace_to_sequence_puml
 def factorial_reduce_multiply(value: int) -> int:
     if value <= 1:
         return value
@@ -33,9 +33,9 @@ def factorial_reduce_multiply(value: int) -> int:
 <td valign="bottom">
 
 ```python
-from pydoctrace.doctrace import trace_to_puml
+from pydoctrace.doctrace import trace_to_sequence_puml
 
-@trace_to_puml
+@trace_to_sequence_puml
 def factorial_recursive(value: int) -> int:
     if value <= 1:
         return value
