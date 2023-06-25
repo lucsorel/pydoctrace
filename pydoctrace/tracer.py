@@ -51,8 +51,8 @@ class ExecutionTracer:
     - execution frames: https://docs.python.org/3/reference/datamodel.html#frame-objects
 
     Useful calls when implementing or debugging features (the contents are added as PlantUML comments in the exported diagram):
-    self.exporter.write_raw_content(f"\n' {event} {frame=} {arg=}\n")
-    self.exporter.write_raw_content(f"' {frame.f_back=}\n")
+    self.exporter.on_raw_content(f"\n' {event} {frame=} {arg=}\n")
+    self.exporter.on_raw_content(f"' {frame.f_back=}\n")
     '''
     def __init__(self, exporter: Exporter):
         self.exporter = exporter
@@ -76,13 +76,13 @@ class ExecutionTracer:
         finally:
             settrace(tracing_function)
 
-    def write_return_or_exit(self, called_end: Call, arg: Any):
+    def on_return_or_exit(self, called_end: Call, arg: Any):
         # the calls stack is empty -> end of the tracing
         if len(self.callers_stack) == 0:
-            self.exporter.write_tracing_end(called_end, arg)
+            self.exporter.on_tracing_end(called_end, arg)
         # normal return call
         else:
-            self.exporter.write_return(called_end, arg)
+            self.exporter.on_return(called_end, arg)
 
     def error_from_exception(self, exception: BaseException) -> Error:
         error_args = getattr(exception, 'args', None)
@@ -113,9 +113,9 @@ class ExecutionTracer:
 
             # starts the tracing or handle an intermediary call
             if len(self.callers_stack) == 0:
-                self.exporter.write_tracing_start(call)
+                self.exporter.on_tracing_start(call)
             else:
-                self.exporter.write_start_call(self.callers_stack[-1]._replace(line_index=frame.f_back.f_lineno), call)
+                self.exporter.on_start_call(self.callers_stack[-1]._replace(line_index=frame.f_back.f_lineno), call)
 
             # unflags any error remaining from localtrace without return event
             self.error_to_handle_with_line = None
@@ -156,13 +156,13 @@ class ExecutionTracer:
             if self.error_to_handle_with_line is None:
                 # end of the block code: removes the last caller from the stack
                 called_end = self.callers_stack.pop()._replace(line_index=frame.f_lineno)
-                self.write_return_or_exit(called_end, arg)
+                self.on_return_or_exit(called_end, arg)
             # propagates the error to the caller
             else:
                 error, _ = self.error_to_handle_with_line
                 error_called = self.callers_stack.pop()._replace(line_index=frame.f_lineno)
                 error_caller = self.callers_stack[-1]._replace(line_index=frame.f_back.f_lineno)
-                self.exporter.write_error_propagation(error_called, error_caller, error)
+                self.exporter.on_error_propagation(error_called, error_caller, error)
 
                 # unflags the error
                 self.error_to_handle_with_line = None
@@ -179,7 +179,7 @@ class ExecutionTracer:
             # the error has been internally handled, a classic return occurs
             if self.error_to_handle_with_line is None:
                 called_end = self.callers_stack.pop()._replace(line_index=frame.f_lineno)
-                self.write_return_or_exit(called_end, arg)
+                self.on_return_or_exit(called_end, arg)
             # handles the flagged error
             else:
                 error, line_number_called = self.error_to_handle_with_line
@@ -190,15 +190,15 @@ class ExecutionTracer:
                     error_called = self.callers_stack.pop()._replace(line_index=line_number)
                     # exits the tracing if there is no caller anymore
                     if len(self.callers_stack) == 0:
-                        self.exporter.write_unhandled_error_end(error_called, error)
+                        self.exporter.on_unhandled_error_end(error_called, error)
                     else:
                         error_caller = self.callers_stack[-1]._replace(line_index=frame.f_back.f_lineno)
-                        self.exporter.write_error_propagation(error_called, error_caller, error)
+                        self.exporter.on_error_propagation(error_called, error_caller, error)
 
                 # error was handled, normal return
                 else:
                     called_end = self.callers_stack.pop()._replace(line_index=frame.f_lineno)
-                    self.write_return_or_exit(called_end, arg)
+                    self.on_return_or_exit(called_end, arg)
 
                 # unflags the error
                 self.error_to_handle_with_line = None

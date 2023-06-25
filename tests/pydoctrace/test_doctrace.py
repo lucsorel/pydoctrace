@@ -19,4 +19,4 @@ def test_tracer_sequence():
             result = ExecutionTracer(exporter).runfunc(trace_factorial_6)
             assert result == 720
         finally:
-            exporter.write_footer()
+            exporter.on_footer()

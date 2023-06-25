@@ -11,14 +11,14 @@ from pydoctrace.tracer import ExecutionTracer
 def tracing_context_factory(context: Context) -> Iterator[ExecutionTracer]:
     with context.exporter_class.export_manager_factory(context.export_file_path) as exporter:
         # initializes the diagram file
-        exporter.write_header(context.start_module, context.start_function_name)
+        exporter.on_header(context.start_module, context.start_function_name)
 
         tracer = ExecutionTracer(exporter)
         try:
             yield tracer
         finally:
             # finalizes the sequence diagram file
-            exporter.write_footer()
+            exporter.on_footer()
 
 
 def trace_to_sequence_puml(function_to_trace: Callable):
