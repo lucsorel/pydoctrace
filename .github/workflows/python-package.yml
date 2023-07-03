@@ -1,0 +1,23 @@
+name: Python package
+
+on: [push]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+    steps:
+      - uses: actions/checkout@v3
+      - name: Install poetry
+        run: pipx install poetry
+      - name: Set up Python
+      - uses: actions/setup-python@v4
+        with:
+          python-version-file: '.python-version'
+          cache: 'poetry'
+      - name: Install dependencies
+        run: poetry install
+      - name: Automated tests
+        run: poetry run pytest
