@@ -2,6 +2,9 @@ name: Python package
 
 on: [push, pull_request]
 
+env:
+  MIN_CODE_COVERAGE_PERCENT: 54
+
 jobs:
   build:
 
@@ -18,4 +21,4 @@ jobs:
       - name: Install dependencies
         run: poetry install
       - name: Automated tests (with code coverage)
-        run: poetry run pytest -v --cov=pydoctrace --cov-branch --cov-report term-missing --cov-fail-under 50
+        run: poetry run pytest -v --cov=pydoctrace --cov-branch --cov-report term-missing --cov-fail-under $MIN_CODE_COVERAGE_PERCENT
