@@ -1,13 +1,11 @@
 name: Python package
 
-on: [push]
+on: [push, pull_request]
 
 jobs:
   build:
 
     runs-on: ubuntu-latest
-    strategy:
-      fail-fast: false
     steps:
       - uses: actions/checkout@v3
       - name: Install poetry
@@ -19,5 +17,5 @@ jobs:
           cache: 'poetry'
       - name: Install dependencies
         run: poetry install
-      - name: Automated tests
-        run: poetry run pytest
+      - name: Automated tests (with code coverage)
+        run: poetry run pytest -v --cov=pydoctrace --cov-branch --cov-report term-missing --cov-fail-under 50
