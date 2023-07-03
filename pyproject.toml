@@ -37,6 +37,7 @@ sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER", "TEST
 known_tests = ["tests"]
 
 [tool.yapf]
+# see https://github.com/google/yapf#knobs
 based_on_style = "facebook"
 # maintain consistency with other quality tools
 COLUMN_LIMIT = 120
@@ -56,8 +57,8 @@ SPLIT_BEFORE_FIRST_ARGUMENT = true
 [tool.ruff]
 # maintain consistency with other quality tools
 line-length = 120
-# activated families of verifications
-select = ["E", "F", "C"]
+# activated families of verifications (https://beta.ruff.rs/docs/rules/
+select = ["A", "B", "E", "F", "W", "N", "SIM", "C4"]
 # do not check line lengths, yapf and isort already handle them
 extend-ignore = ["E501"]
 # automatically fixes when possible
