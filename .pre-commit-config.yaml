@@ -33,7 +33,7 @@ repos:
         additional_dependencies: [toml]
 
 -   repo: https://github.com/google/yapf
-    rev: v0.40.0
+    rev: v0.40.1
     hooks:
     -   id: yapf
         name: Yapf

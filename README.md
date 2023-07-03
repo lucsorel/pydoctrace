@@ -1,3 +1,8 @@
+[![pre-commit.ci status](https://results.pre-commit.ci/badge/github/lucsorel/pydoctrace/main.svg)](https://results.pre-commit.ci/latest/github/lucsorel/pydoctrace/main)
+
+`pydoctrace` uses [pre-commit hooks](https://pre-commit.com/) and [pre-commit.ci continuous integration](https://pre-commit.ci/) to enforce commit messages, code formatting and linting for quality and consistency sake.
+See the [code conventions](#code-conventions) section if you would like to contribute to the project.
+
 # pydoctrace
 
 Generate sequence diagrams by tracing Python code execution.
@@ -41,9 +46,9 @@ def factorial_recursive(value: int) -> int:
 </td>
 </tr>
 <tr>
-<td valign="top"><pre>tests.modules.factorial.factorial_reduce_multiply.puml</pre>
+<td valign="top"><code>tests.modules.factorial.factorial_reduce_multiply.puml</code><br />
 <img src="https://www.plantuml.com/plantuml/svg/rP0nYof148Jp_XMDgUYweZwHnqCqUDaXNEY1Z3kzEZZRlVJsW88__WAvKmurCBhDXgcYwgkUD-RKKXNHgB6cNubFaPf-wGeJ3IvUNnibdmhQL2bQgEC9caFWsgchS277bVC-y0xpmSt_ogc58jIExKiVtyXlOhHmnM6dajWl9OhYKfIR40y_RQAUz69v3yJiO1yyOIbYMpa2hANt3piFHdpmmnKTO3523RkzpJ069Xpb0AyauLE2gwtRlNH6AhyhftSmnW1AbfGnlwDEu7m-_pRGOLj09wsvwAWjfFbmq1RKFyzGrtzxFNo5T_OWTmfGYXWf_YScTKOUjoVCilhafJ1r1MKPp8bzgY9y0W00" /></td>
-<td valign="top"><pre>tests.modules.factorial.factorial_recursive.puml</pre>
+<td valign="top"><code>tests.modules.factorial.factorial_recursive.puml</code><br />
 <img src="https://www.plantuml.com/plantuml/svg/xP31QYf144Nt_HM5Mz5nv3qJ90JHHNP1oD90AAThjB6dIgghWu8Vdu2OI8o8PEkkwNkuzr2ZPAYMcmX6oLAt4PyZfMwDbOa6ZD-lDwKgQmhlvD8gy1eL6nZBPehU1rv0sJlwdw9QgC8QsGxv_wFuMOp6MAqMAfdzHA8eJ4GvXRZwYObwqZto4eWPtJ9uWbh4vh9nRYQTHsYTqN_bN_nRZiK8D2oMDeGOc63Wt7KLSFKejDlxtKZrORRitLHkAdzIKRAi3ELfUEzskzqNq3y5FXkFYS55el_l8bBsU-UPsKEdS-KbXd1tfj7L8aOAJyIaQEHXleMYM6-zLAPOKL6u4R7FJNGV" /></td>
 </tr>
 </tbody>
@@ -123,6 +128,7 @@ poetry run pytest -v --cov=pydoctrace --cov-branch --cov-report term-missing --c
 
 # Changelog
 
+* `0.1.1`: added github actions for the automated tests and interaction with pre-commit.ci for the code linting
 * `0.1.0`: ✨ first release, PlantUML exporter; diagram files are saved in the current working directory
 
 # Licence
