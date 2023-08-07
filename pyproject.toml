@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pydoctrace"
-version = "0.1.2"
+version = "0.2.0"
 description = "Generate sequence diagrams by tracing Python code execution"
 keywords = ["sequence diagram", "documentation", "tracing", "doc-as-code", "PlantUML"]
 readme = "README.md"
@@ -64,9 +64,11 @@ extend-ignore = ["E501"]
 # automatically fixes when possible
 fix = true
 
-# do not check unused imports in __init__.py files (they expose module features)
 [tool.ruff.per-file-ignores]
+# do not check unused imports in __init__.py files (they expose module features)
 "__init__.py" = ["E402"]
+# cls name for the class parameter in the @classmethod is meaningless
+"pydoctrace/exporters/__init__.py" = ["N804"]
 
 [build-system]
 requires = ["poetry-core"]

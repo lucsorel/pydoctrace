@@ -15,7 +15,7 @@ from pathlib import Path
 from sys import gettrace, settrace
 from typing import Any, Callable, List, NamedTuple
 
-from pydoctrace.domain.sequence import Call, Error
+from pydoctrace.domain.execution import CallEnd, Error
 from pydoctrace.exporters import Exporter
 
 # idée complémentaire : dessiner un diagramme de modules avec des liens entre les fonctions qui s'appellent les unes les autres
@@ -56,7 +56,7 @@ class ExecutionTracer:
     '''
     def __init__(self, exporter: Exporter):
         self.exporter = exporter
-        self.callers_stack: List[Call] = deque()
+        self.callers_stack: List[CallEnd] = deque()
         self.error_to_handle_with_line: TracedError = None
 
     def runfunc(self, func: Callable, *args, **kwargs) -> Any:
@@ -76,20 +76,17 @@ class ExecutionTracer:
         finally:
             settrace(tracing_function)
 
-    def on_return_or_exit(self, called_end: Call, arg: Any):
+    def on_return_or_exit(self, called_end: CallEnd, arg: Any):
         # the calls stack is empty -> end of the tracing
         if len(self.callers_stack) == 0:
             self.exporter.on_tracing_end(called_end, arg)
         # normal return call
         else:
-            self.exporter.on_return(called_end, arg)
+            self.exporter.on_return(called=called_end, caller=self.callers_stack[-1], arg=arg)
 
     def error_from_exception(self, exception: BaseException) -> Error:
         error_args = getattr(exception, 'args', None)
-        if error_args is None or len(error_args) == 0:
-            error_message = repr(exception)
-        else:
-            error_message = error_args[0]
+        error_message = repr(exception) if error_args is None or len(error_args) == 0 else error_args[0]
 
         return Error(exception.__class__.__name__, error_message)
 
@@ -109,7 +106,7 @@ class ExecutionTracer:
                 fq_module_text = module_name_from_filepath(frame.f_globals.get('__file__', None))
             line_index = frame.f_lineno
             function_name = frame.f_code.co_name
-            call = Call(fq_module_text, tuple(fq_module_text.split('.')), function_name, line_index)
+            call = CallEnd(fq_module_text, tuple(fq_module_text.split('.')), function_name, line_index)
 
             # starts the tracing or handle an intermediary call
             if len(self.callers_stack) == 0:

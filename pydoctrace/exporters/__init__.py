@@ -1,8 +1,8 @@
 from contextlib import contextmanager
 from io import TextIOBase
-from typing import Any, Iterator
+from typing import Any, Iterator, NamedTuple, Type
 
-from pydoctrace.domain.sequence import Call, Error
+from pydoctrace.domain.execution import CallEnd, Error
 
 
 class Exporter:
@@ -27,14 +27,14 @@ class Exporter:
         '''
         self.io_sink.write(raw_content)
 
-    def on_tracing_start(self, called: Call):
+    def on_tracing_start(self, called: CallEnd):
         '''
         Writes the diagram content leading to the first call (the decorated function).
         This may be a no-operation
         '''
         raise NotImplementedError()
 
-    def on_start_call(self, caller: Call, called: Call):
+    def on_start_call(self, caller: CallEnd, called: CallEnd):
         '''
         Writes the diagram content corresponding to a call between:
         - a caller: the block of code being executed
@@ -51,27 +51,27 @@ class Exporter:
         '''
         raise NotImplementedError()
 
-    def on_error_propagation(self, error_called: Call, error_caller: Call, error: Error):
+    def on_error_propagation(self, error_called: CallEnd, error_caller: CallEnd, error: Error):
         '''
         Writes the diagram contents corresponding to an error propagating
         between the called (which raised or propagated the error) and its caller
         '''
         raise NotImplementedError()
 
-    def on_return(self, called: Call, caller: Call, arg: Any):
+    def on_return(self, *, called: CallEnd, caller: CallEnd, arg: Any):
         '''
         Writes the diagram contents corresponding to a value returned
         by a called block of code to a caller block of code.
         '''
         raise NotImplementedError()
 
-    def on_tracing_end(self, called: Call, arg: Any):
+    def on_tracing_end(self, called: CallEnd, arg: Any):
         '''
         Special case of on_return when the last executed function returns a value.
         '''
         raise NotImplementedError()
 
-    def on_unhandled_error_end(self, called: Call, error: Error):
+    def on_unhandled_error_end(self, called: CallEnd, error: Error):
         '''
         Special case of on_tracing_end when an error was not handled by an except block.
         '''
@@ -98,3 +98,14 @@ class Exporter:
         with open(export_file_path, 'w', encoding='utf8') as diagram_file:
             exporter = exporter_class(diagram_file)
             yield exporter
+
+
+class Context(NamedTuple):
+    '''
+    Stores information about the tracing process.
+    It is used to pass information between the trace parser and the diagram exporter.
+    '''
+    exporter_class: Type[Exporter]
+    export_file_path: str
+    start_module: str
+    start_function_name: str

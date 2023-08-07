@@ -3,7 +3,7 @@ name: Python package
 on: [push, pull_request]
 
 env:
-  MIN_CODE_COVERAGE_PERCENT: 54
+  MIN_CODE_COVERAGE_PERCENT: 69
 
 jobs:
   build:

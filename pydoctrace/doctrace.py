@@ -2,7 +2,8 @@ from contextlib import contextmanager
 from functools import wraps
 from typing import Callable, Iterator
 
-from pydoctrace.domain.context import Context
+from pydoctrace.exporters import Context
+from pydoctrace.exporters.plantuml.component import PlantUMLComponentExporter
 from pydoctrace.exporters.plantuml.sequence import PlantUMLSequenceExporter
 from pydoctrace.tracer import ExecutionTracer
 
@@ -35,7 +36,27 @@ def trace_to_sequence_puml(function_to_trace: Callable):
         context = Context(PlantUMLSequenceExporter, export_file_path, function_to_trace_module, function_to_trace_name)
 
         # runs the decorated function in a tracing context
-        with tracing_context_factory(context) as sequence_tracer:
-            return sequence_tracer.runfunc(function_to_trace, *args, **kwargs)
+        with tracing_context_factory(context) as execution_tracer:
+            return execution_tracer.runfunc(function_to_trace, *args, **kwargs)
+
+    return traceable_func
+
+
+def trace_to_component_puml(function_to_trace: Callable):
+    '''
+    Decorates a function in order to trace its execution as a component diagram.
+    '''
+    @wraps(function_to_trace)
+    def traceable_func(*args, **kwargs):
+        # initializes the tracing context
+        function_to_trace_name = getattr(function_to_trace, '__name__', '__main__')
+        function_to_trace_module = getattr(function_to_trace, '__module__', '__root__')
+        # exports to PlantUML by default
+        export_file_path = f'{function_to_trace_name}-component.puml'
+        context = Context(PlantUMLComponentExporter, export_file_path, function_to_trace_module, function_to_trace_name)
+
+        # runs the decorated function in a tracing context
+        with tracing_context_factory(context) as execution_tracer:
+            return execution_tracer.runfunc(function_to_trace, *args, **kwargs)
 
     return traceable_func

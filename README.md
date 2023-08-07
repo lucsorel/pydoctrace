@@ -128,9 +128,10 @@ poetry run pytest -v --cov=pydoctrace --cov-branch --cov-report term-missing --c
 
 # Changelog
 
+* `0.2.0`: PlantUML exporter for component diagrams
 * `0.1.2`: added github actions for the automated tests and interaction with pre-commit.ci for the code linting
 * `0.1.1`: [deleted release] added github actions for the automated tests and interaction with pre-commit.ci for the code linting
-* `0.1.0`: ✨ first release, PlantUML exporter; diagram files are saved in the current working directory
+* `0.1.0`: ✨ first release, PlantUML exporter for sequence diagrams; diagram files are saved in the current working directory
 
 # Licence
 

@@ -25,4 +25,4 @@ def check_or_wrap_error(value_to_check: Any, validator: Callable) -> Any:
         if validator(value_to_check):
             return value_to_check
     except BaseException:
-        raise FactorialError()  # set cause
+        raise FactorialError() from None
