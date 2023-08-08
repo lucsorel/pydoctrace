@@ -40,7 +40,7 @@ note right: line {called.line_index}
 '''
 
 ERROR_PROPAGATION_TPL = r'''
-"{error_caller.fq_module_text:dunder}\n{error_caller.function_name:dunder}" o<--x "{error_called.fq_module_text:dunder}\n{error_called.function_name:dunder}": ""{error.class_name}""\\n{error.message}
+"{error_caller.fq_module_text:dunder}\n{error_caller.function_name:dunder}" o<--x "{error_called.fq_module_text:dunder}\n{error_called.function_name:dunder}": ""{error.class_name}""\n{error.message}
 deactivate "{error_called.fq_module_text:dunder}\n{error_called.function_name:dunder}"
 note right: line {error_called.line_index}
 note left: line {error_caller.line_index}
@@ -52,7 +52,7 @@ note right: line {called.line_index}
 '''
 
 UNHANDLED_ERROR_END_TPL = r'''
-[<-->x "{called.fq_module_text:dunder}\n{called.function_name:dunder}": ""{error.class_name}""\\n{error.message}
+[<-->x "{called.fq_module_text:dunder}\n{called.function_name:dunder}": ""{error.class_name}""\n{error.message}
 note right: line {called.line_index}
 '''
 
