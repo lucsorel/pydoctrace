@@ -103,7 +103,7 @@ class Exporter:
 class Context(NamedTuple):
     '''
     Stores information about the tracing process.
-    It is used to pass information between the trace parser and the diagram exporter.
+    It is used to pass information between the tracer and the diagram exporter.
     '''
     exporter_class: Type[Exporter]
     export_file_path: str
