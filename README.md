@@ -180,6 +180,8 @@ poetry run pre-commit run ruff --all-files
 Please, follow the [conventions of the Angular team](https://github.com/angular/angular/blob/main/CONTRIBUTING.md#-commit-message-format) for commit messages.
 When merging your pull-request, the new version of the project will be derived from the messages.
 
+I use the [redjue.git-commit-plugin](https://marketplace.visualstudio.com/items?itemName=redjue.git-commit-plugin) codium/vsCode extension to help me write commit messages.
+
 ### Code formatting
 
 This project uses `isort` and `yapf` to format the code.
