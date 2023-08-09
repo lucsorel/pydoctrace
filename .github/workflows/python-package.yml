@@ -1,6 +1,6 @@
 name: Python package
 
-on: [push, pull_request]
+on: [push]
 
 env:
   MIN_CODE_COVERAGE_PERCENT: 69
