@@ -10,7 +10,7 @@ from collections import defaultdict, deque
 from io import TextIOBase
 from itertools import count
 from string import Formatter
-from typing import Any, Dict, Iterable, Tuple
+from typing import Any, Dict, Iterable, Tuple, Union
 
 from pydoctrace.domain.diagram import Call, Function, Interactions, Module, Raised, Return
 from pydoctrace.domain.execution import CallEnd, Error
@@ -56,7 +56,7 @@ class ModuleStructureVisitor:
 
     def visit_module(self, module: Module, parent_module_path: Tuple[str], indentation_level: int) -> Iterable[str]:
         '''
-        Yields the PlantUML code dedicated to package or modules.
+        Yields the PlantUML code dedicated to package or modules hierarchy.
         '''
         has_functions = len(module.functions) > 0
 
@@ -141,7 +141,7 @@ class PlantUMLComponentExporter(Exporter):
     Exports the component diagram in the PlantUML format.
 
     The PlantUML syntax of the component diagram expects the components structure to be declared
-    before the arrows of the calls. Therefore, this exporter must store all the traced calls
+    before the arrows representing the calls. Therefore, this exporter must store all the traced calls
     before exporting the diagram in order to build the components structure from the traced calls,
     then to export the arrows representing the calls.
     '''
@@ -253,6 +253,12 @@ class PlantUMLComponentExporter(Exporter):
         for component_line in ModuleStructureVisitor(traced_function).visit_module(root_module, (), 0):
             self.io_sink.write(component_line)
 
+    def build_arrow_label_ranks(self, ranks: Iterable[Union[int, str]]) -> str:
+        if len(ranks) > 7:
+            return f'{self.build_arrow_label_ranks(ranks[:3])} ... {self.build_arrow_label_ranks(ranks[-3:])}'
+        else:
+            return ', '.join(str(rank) for rank in ranks)
+
     def write_components_interactions(self, interactions_by_call: Dict[Tuple[Function, Function], Interactions]):
         '''
         Writes the 2nd part of the PlantUML component diagram describing the calls between
@@ -264,7 +270,7 @@ class PlantUMLComponentExporter(Exporter):
             # call arrows between functions have a different direction whether they are in the same module or not
             call_arrow = '-->' if are_in_same_module else '->'
 
-            call_label = f" : {', '.join(str(call.rank) for call in calls)}"
+            call_label = f' : {self.build_arrow_label_ranks([call.rank for call in calls])}'
             self.io_sink.write(
                 self.fmt.format(
                     INTERACTION_CALL_TPL,
@@ -279,7 +285,7 @@ class PlantUMLComponentExporter(Exporter):
             returns = [response for response in responses if isinstance(response, Return)]
             if returns:
                 returns_arrow = '<..' if are_in_same_module else '<.'
-                returns_label = f" : {', '.join(str(exit_return.rank) for exit_return in returns)}"
+                returns_label = f' : {self.build_arrow_label_ranks([exit_return.rank for exit_return in returns])}'
                 self.io_sink.write(
                     self.fmt.format(
                         INTERACTION_CALL_TPL,
@@ -293,8 +299,8 @@ class PlantUMLComponentExporter(Exporter):
             raiseds = [response for response in responses if isinstance(response, Raised)]
             if raiseds:
                 raiseds_arrow = f"{'<..' if are_in_same_module else '<.'}[thickness=2]"
-                raiseds_label = ', '.join(f'{exit_raised.rank}:{exit_raised.error}' for exit_raised in raiseds)
-                raiseds_label = f' #line:darkred;text:darkred : {raiseds_label}'
+                raiseds_label = f" #line:darkred;text:darkred : {self.build_arrow_label_ranks([f'{exit_raised.rank}:{exit_raised.error}' for exit_raised in raiseds])}"
+
                 self.io_sink.write(
                     self.fmt.format(
                         INTERACTION_CALL_TPL,

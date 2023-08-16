@@ -40,14 +40,10 @@ def replace_arobase_by_unicode(value: Any, format_spec: str) -> Tuple[Any, str]:
     '''
     Replaces the '@' character by its unicode equivalent
     '''
-    if value is not None:
-        value = AROBASE_REPLACE_PATTERN.sub(AROBASE_IN_UNICODE, str(value))
+    if value is not None and isinstance(value, str):
+        value = AROBASE_REPLACE_PATTERN.sub(AROBASE_IN_UNICODE, value)
 
     return value, format_spec
-
-
-def _escape_dunder(text: str):
-    return DUNDER_REPLACE_PATTERN.sub('~__', text)
 
 
 def escape_dunder_with_tilde(value: Any, format_spec: str) -> Tuple[Any, str]:
@@ -55,7 +51,7 @@ def escape_dunder_with_tilde(value: Any, format_spec: str) -> Tuple[Any, str]:
         # escapes each text part of the given str value (splitted on '.') with '~' when format_spec is 'dunder'
         # to avoid PlantUML interpreting dunder symbols as striking formatting
         if isinstance(value, str):
-            value = '.'.join(_escape_dunder(part) for part in value.split('.'))
+            value = DUNDER_REPLACE_PATTERN.sub('~__', value)
 
         # dunder formatting is done, cancel it for parent formatting
         format_spec = ''
