@@ -211,9 +211,8 @@ class PlantUMLComponentExporter(Exporter):
         '''
         At this stage, the exporter has all the information it needs to produce the contents of the diagram file
         '''
-
         # builds components structure
-        root_module = build_components_structure(self.functions.values())
+        root_module = self.build_components_structure(self.functions.values())
 
         # writes components structure
         self.write_components_structure(root_module, self.traced_function)
@@ -223,6 +222,28 @@ class PlantUMLComponentExporter(Exporter):
 
         # writes the file footer
         self.io_sink.write(FOOTER_TPL)
+
+    def build_components_structure(self, functions: Iterable[Function]) -> Module:
+        '''
+        Creates the modules hierarchy with their functions from the calls
+        traced during the execution.
+        '''
+        root_module = Module(None, {}, {})
+
+        for function in functions:
+            # creates or finds the modules hierarchy holding the function
+            parent_module = root_module
+            for module_name in function.module_path:
+                sub_module = parent_module.sub_modules.get(module_name)
+                if sub_module is None:
+                    sub_module = Module(module_name, {}, {})
+                    parent_module.sub_modules[module_name] = sub_module
+                parent_module = sub_module
+
+            # adds the function in the module
+            sub_module.functions[function.name] = function
+
+        return root_module
 
     def write_components_structure(self, root_module: Module, traced_function: Function):
         '''
@@ -283,26 +304,3 @@ class PlantUMLComponentExporter(Exporter):
                         arrow_label=raiseds_label
                     )
                 )
-
-
-def build_components_structure(functions: Iterable[Function]) -> Module:
-    '''
-    Creates the modules hierarchy with their functions from the calls
-    traced during the execution.
-    '''
-    root_module = Module(None, {}, {})
-
-    for function in functions:
-        # creates or finds the modules hierarchy holding the function
-        parent_module = root_module
-        for module_name in function.module_path:
-            sub_module = parent_module.sub_modules.get(module_name)
-            if sub_module is None:
-                sub_module = Module(module_name, {}, {})
-                parent_module.sub_modules[module_name] = sub_module
-            parent_module = sub_module
-
-        # adds the function in the module
-        sub_module.functions[function.name] = function
-
-    return root_module
