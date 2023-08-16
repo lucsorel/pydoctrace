@@ -88,7 +88,7 @@ class ModuleStructureVisitor:
             package_styling = ''
             if indentation_level == 0:
                 package_type = 'rectangle'
-                package_styling = ' #line:transparent'
+                package_styling = ' #line:transparent;text:transparent'
             # - the component is a module if it has functions -> use a PlantUML frame representation
             elif has_functions:
                 package_type = 'frame'
