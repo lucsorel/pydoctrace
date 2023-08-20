@@ -265,10 +265,11 @@ class PlantUMLComponentExporter(Exporter):
         the functions as arrows between the components.
         '''
         for (caller_function, called_function), (calls, responses) in interactions_by_call.items():
+            is_recursive_call = caller_function == called_function
             are_in_same_module = caller_function.module_path == called_function.module_path
 
             # call arrows between functions have a different direction whether they are in the same module or not
-            call_arrow = '-->' if are_in_same_module else '->'
+            call_arrow = '->' if is_recursive_call or not are_in_same_module else '-->'
 
             call_label = f' : {self.build_arrow_label_ranks([call.rank for call in calls])}'
             self.io_sink.write(
@@ -281,20 +282,21 @@ class PlantUMLComponentExporter(Exporter):
                 )
             )
 
-            # draws different line types for return and error exits
-            returns = [response for response in responses if isinstance(response, Return)]
-            if returns:
-                returns_arrow = '<..' if are_in_same_module else '<.'
-                returns_label = f' : {self.build_arrow_label_ranks([exit_return.rank for exit_return in returns])}'
-                self.io_sink.write(
-                    self.fmt.format(
-                        INTERACTION_CALL_TPL,
-                        caller_function=caller_function,
-                        arrow=returns_arrow,
-                        called_function=called_function,
-                        arrow_label=returns_label
+            # returns are not drawn for recursive calls to improve readability
+            if not is_recursive_call:
+                returns = [response for response in responses if isinstance(response, Return)]
+                if returns:
+                    returns_arrow = '<..' if are_in_same_module else '<.'
+                    returns_label = f' : {self.build_arrow_label_ranks([exit_return.rank for exit_return in returns])}'
+                    self.io_sink.write(
+                        self.fmt.format(
+                            INTERACTION_CALL_TPL,
+                            caller_function=caller_function,
+                            arrow=returns_arrow,
+                            called_function=called_function,
+                            arrow_label=returns_label
+                        )
                     )
-                )
 
             raiseds = [response for response in responses if isinstance(response, Raised)]
             if raiseds:
