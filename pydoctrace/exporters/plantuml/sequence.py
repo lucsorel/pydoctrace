@@ -87,7 +87,7 @@ class PlantUMLSequenceExporter(Exporter):
     def on_start_call(self, caller: CallEnd, called: CallEnd):
         self.io_sink.write(self.fmt.format(CALL_START_TPL, caller=caller, called=called))
 
-    def format_arg_value(self, arg: Any) -> str:
+    def format_arg_value(self, arg: Any) -> Any:
         if arg is None:
             return ''
         return arg
