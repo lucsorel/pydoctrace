@@ -1,9 +1,9 @@
 from io import StringIO
-from typing import Any, Dict, Iterable, Union
+from typing import Any, Dict, Iterable, Tuple, Union
 
 from pytest import fixture, mark
 
-from pydoctrace.domain.diagram import Call, Function, Module, Raised, Return
+from pydoctrace.domain.diagram import Call, Function, Interactions, Module, Raised, Return
 from pydoctrace.domain.execution import CallEnd, Error
 from pydoctrace.exporters.plantuml.component import (
     PLANTUML_COMPONENT_FORMATTER, ModuleStructureVisitor, PlantUMLComponentExporter
@@ -13,6 +13,14 @@ from pydoctrace.exporters.plantuml.component import (
 @fixture(scope='function')
 def exporter_without_writer() -> PlantUMLComponentExporter:
     return PlantUMLComponentExporter(None)
+
+
+@fixture(scope='function')
+def component_exporter_and_writer() -> Tuple[PlantUMLComponentExporter, StringIO]:
+    exported_contents = StringIO()
+    exporter = PlantUMLComponentExporter(exported_contents)
+
+    return exporter, exported_contents
 
 
 @mark.parametrize(
@@ -92,6 +100,72 @@ def test_plantuml_component_exporter_build_arrow_label_ranks(
     exporter_without_writer: PlantUMLComponentExporter, ranks: Iterable[Union[int, str]], label_ranks: str
 ):
     assert exporter_without_writer.build_arrow_label_ranks(ranks) == label_ranks
+
+
+def test_plantuml_component_exporter_on_tracing_start(exporter_without_writer: PlantUMLComponentExporter):
+    start_called = CallEnd('math_cli.__main__', ('math_cli', '__main__'), 'factorial', 16)
+
+    # the exporter is initialized without reference to the traced function
+    assert exporter_without_writer.traced_function is None
+
+    # then the exporter knows which function started the tracing
+    exporter_without_writer.on_tracing_start(start_called)
+    assert exporter_without_writer.traced_function == Function('factorial', ('math_cli', '__main__'))
+
+
+def test_plantuml_component_exporter_on_start_call(exporter_without_writer: PlantUMLComponentExporter):
+    caller = CallEnd('math_cli.controller', ('math_cli', 'controller'), 'factorial', 25)
+    called = CallEnd('math_cli.validator', ('math_cli', 'validator'), 'is_positive_int', 4)
+
+    # the exporter is initialized with an empty cache of calls between functions
+    assert exporter_without_writer.interactions_by_call is not None
+    assert len(exporter_without_writer.interactions_by_call) == 0
+
+    # notifies the exporter that a call starts
+    exporter_without_writer.on_start_call(caller, called)
+
+    assert len(exporter_without_writer.interactions_by_call) == 1
+    call_interaction = exporter_without_writer.interactions_by_call[
+        Function('factorial', ('math_cli', 'controller')),
+        Function('is_positive_int', ('math_cli', 'validator'))]
+    assert len(call_interaction.calls) == 1
+    assert len(call_interaction.responses) == 0
+    assert Call(1) in call_interaction.calls
+
+
+def test_plantuml_component_exporter_on_error_propagation(exporter_without_writer: PlantUMLComponentExporter):
+    caller = CallEnd('math_cli.__main__', ('math_cli', '__main__'), 'factorial', 4)
+    called = CallEnd('math_cli.validator', ('math_cli', 'validator'), 'validate_positive_int', 25)
+    validation_error = Error('ValueError', 'must be a positive integer')
+    assert len(exporter_without_writer.interactions_by_call) == 0
+
+    # notifies the exporter that an error is raised by the called to the caller
+    exporter_without_writer.on_error_propagation(called, caller, validation_error)
+
+    assert len(exporter_without_writer.interactions_by_call) == 1
+    call_interaction = exporter_without_writer.interactions_by_call[
+        Function('factorial', ('math_cli', '__main__')),
+        Function('validate_positive_int', ('math_cli', 'validator'))]
+    assert len(call_interaction.calls) == 0
+    assert len(call_interaction.responses) == 1
+    assert Raised(1, 'ValueError') in call_interaction.responses
+
+
+def test_plantuml_component_exporter_on_return(exporter_without_writer: PlantUMLComponentExporter):
+    caller = CallEnd('math_cli.controller', ('math_cli', 'controller'), '__main__', 25)
+    called = CallEnd('math_cli.compute', ('math_cli', 'compute'), 'factorial', 4)
+    returned_value = 24
+    assert len(exporter_without_writer.interactions_by_call) == 0
+
+    # notifies the exporter that a value is returned by the called to the caller
+    exporter_without_writer.on_return(caller=caller, called=called, arg=returned_value)
+
+    assert len(exporter_without_writer.interactions_by_call) == 1
+    call_interaction = exporter_without_writer.interactions_by_call[Function('__main__', ('math_cli', 'controller')),
+                                                                    Function('factorial', ('math_cli', 'compute'))]
+    assert len(call_interaction.calls) == 0
+    assert len(call_interaction.responses) == 1
+    assert Return(1) in call_interaction.responses
 
 
 @mark.parametrize(
@@ -278,74 +352,82 @@ def test_module_structure_visitor_visit_functions(
         assert plantuml_line == expected_line, f"at index {line_index}, '{plantuml_line}' is expected to be '{expected_line}'"
 
 
+@mark.parametrize(
+    ['caller_function', 'called_function', 'calls', 'responses', 'expected_written_content'],
+    [
+        # successful call-and-return between 2 functions that are in the same module
+        (
+            Function('caller', ('same', 'module')), Function('called_with_success',
+                                                             ('same', 'module')), [Call(1)], [Return(2)],
+            '[same.module.caller] --> [same.module.called_with_success] : 1\n[same.module.caller] <.. [same.module.called_with_success] : 2\n'
+        ),
+        # successful call-and-return between 2 functions that are not in the same module
+        (
+            Function('caller', ('module_1', )), Function('called_with_success', ('module_2', )), [Call(1)], [Return(2)],
+            '[module_1.caller] -> [module_2.called_with_success] : 1\n[module_1.caller] <. [module_2.called_with_success] : 2\n'
+        ),
+        # successful recursive call-and-return (the return arrow is omitted, for consistency sake)
+        (
+            Function('self_caller', ('module', )), Function('self_caller', ('module', )), [Call(1)], [Return(2)],
+            '[module.self_caller] -> [module.self_caller] : 1\n'
+        ),
+        # repeated successful call-and-return between 2 functions that are in the same module
+        (
+            Function('caller',
+                     ('module', )), Function('called',
+                                             ('module', )), [Call(1), Call(3)], [Return(2), Return(4)],
+            '[module.caller] --> [module.called] : 1, 3\n[module.caller] <.. [module.called] : 2, 4\n'
+        ),
+        # '[{caller_function.fqn:dunder}] {arrow} [{called_function.fqn:dunder}]{arrow_label}\n'
+        # unsuccessful call-and-raise between 2 functions that are in the same module
+        (
+            Function('caller', ('same', 'module')), Function('called_with_raised',
+                                                             ('same', 'module')), [Call(1)], [Raised(2, 'ValueError')],
+            '[same.module.caller] --> [same.module.called_with_raised] : 1\n[same.module.caller] <..[thickness=2] [same.module.called_with_raised] #line:darkred;text:darkred : 2:ValueError\n'
+        ),
+        # unsuccessful call-and-raised between 2 functions that are not in the same module
+        (
+            Function('caller', ('module_1', )), Function('called_with_raised',
+                                                         ('module_2', )), [Call(1)], [Raised(2, 'ValueError')],
+            '[module_1.caller] -> [module_2.called_with_raised] : 1\n[module_1.caller] <.[thickness=2] [module_2.called_with_raised] #line:darkred;text:darkred : 2:ValueError\n'
+        ),
+        # unsuccessful recursive call-and-raised (the arrow for the raised error is drawn)
+        (
+            Function('self_caller', ('module', )), Function('self_caller',
+                                                            ('module', )), [Call(1)], [Raised(2, 'ValueError')],
+            '[module.self_caller] -> [module.self_caller] : 1\n[module.self_caller] <..[thickness=2] [module.self_caller] #line:darkred;text:darkred : 2:ValueError\n'
+        ),
+        # repeated unsuccessful call-and-raised between 2 functions that are in the same module
+        (
+            Function('caller', ('module', )), Function('called', ('module', )), [Call(1), Call(3)],
+            [Raised(2, 'ValueError'), Raised(4, 'TypeError')],
+            '[module.caller] --> [module.called] : 1, 3\n[module.caller] <..[thickness=2] [module.called] #line:darkred;text:darkred : 2:ValueError, 4:TypeError\n'
+        ),
+        # repeated calls (one failed, one successful) between 2 functions that are not in the same module
+        (
+            Function('caller', ('module_1', )), Function('called', ('module_2', )), [Call(1), Call(3)],
+            [Raised(2, 'ValueError'), Return(4)],
+            '[module_1.caller] -> [module_2.called] : 1, 3\n[module_1.caller] <. [module_2.called] : 4\n[module_1.caller] <.[thickness=2] [module_2.called] #line:darkred;text:darkred : 2:ValueError\n'
+        ),
+    ]
+)
+def test_plantuml_component_exporter_write_components_interactions(
+    component_exporter_and_writer: Tuple[PlantUMLComponentExporter, StringIO], caller_function: Function,
+    called_function: Function, calls: Iterable[Call], responses: Iterable[Union[Return,
+                                                                                Raised]], expected_written_content: str
+):
+    interactions_by_call = {
+        (caller_function, called_function): Interactions(calls, responses)
+    }
+    exporter, contents_writer = component_exporter_and_writer
+
+    exporter.write_components_interactions(interactions_by_call)
+
+    assert contents_writer.getvalue() == expected_written_content
+
+
 def test_plantuml_component_exporter_on_headers():
     exported_contents = StringIO()
     exporter = PlantUMLComponentExporter(exported_contents)
     exporter.on_header('math_cli.__main__', 'factorial')
     assert exported_contents.getvalue().startswith('@startuml math_cli.__main__.factorial-component\n')
-
-
-def test_plantuml_component_exporter_on_tracing_start(exporter_without_writer: PlantUMLComponentExporter):
-    start_called = CallEnd('math_cli.__main__', ('math_cli', '__main__'), 'factorial', 16)
-
-    # the exporter is initialized without reference to the traced function
-    assert exporter_without_writer.traced_function is None
-
-    # then the exporter knows which function started the tracing
-    exporter_without_writer.on_tracing_start(start_called)
-    assert exporter_without_writer.traced_function == Function('factorial', ('math_cli', '__main__'))
-
-
-def test_plantuml_component_exporter_on_start_call(exporter_without_writer: PlantUMLComponentExporter):
-    caller = CallEnd('math_cli.controller', ('math_cli', 'controller'), 'factorial', 25)
-    called = CallEnd('math_cli.validator', ('math_cli', 'validator'), 'is_positive_int', 4)
-
-    # the exporter is initialized with an empty cache of calls between functions
-    assert exporter_without_writer.interactions_by_call is not None
-    assert len(exporter_without_writer.interactions_by_call) == 0
-
-    # notifies the exporter that a call starts
-    exporter_without_writer.on_start_call(caller, called)
-
-    assert len(exporter_without_writer.interactions_by_call) == 1
-    call_interaction = exporter_without_writer.interactions_by_call[
-        Function('factorial', ('math_cli', 'controller')),
-        Function('is_positive_int', ('math_cli', 'validator'))]
-    assert len(call_interaction.calls) == 1
-    assert len(call_interaction.responses) == 0
-    assert Call(1) in call_interaction.calls
-
-
-def test_plantuml_component_exporter_on_error_propagation(exporter_without_writer: PlantUMLComponentExporter):
-    caller = CallEnd('math_cli.__main__', ('math_cli', '__main__'), 'factorial', 4)
-    called = CallEnd('math_cli.validator', ('math_cli', 'validator'), 'validate_positive_int', 25)
-    validation_error = Error('ValueError', 'must be a positive integer')
-    assert len(exporter_without_writer.interactions_by_call) == 0
-
-    # notifies the exporter that an error is raised by the called to the caller
-    exporter_without_writer.on_error_propagation(called, caller, validation_error)
-
-    assert len(exporter_without_writer.interactions_by_call) == 1
-    call_interaction = exporter_without_writer.interactions_by_call[
-        Function('factorial', ('math_cli', '__main__')),
-        Function('validate_positive_int', ('math_cli', 'validator'))]
-    assert len(call_interaction.calls) == 0
-    assert len(call_interaction.responses) == 1
-    assert Raised(1, 'ValueError') in call_interaction.responses
-
-
-def test_plantuml_component_exporter_on_return(exporter_without_writer: PlantUMLComponentExporter):
-    caller = CallEnd('math_cli.controller', ('math_cli', 'controller'), '__main__', 25)
-    called = CallEnd('math_cli.compute', ('math_cli', 'compute'), 'factorial', 4)
-    returned_value = 24
-    assert len(exporter_without_writer.interactions_by_call) == 0
-
-    # notifies the exporter that a value is returned by the called to the caller
-    exporter_without_writer.on_return(caller=caller, called=called, arg=returned_value)
-
-    assert len(exporter_without_writer.interactions_by_call) == 1
-    call_interaction = exporter_without_writer.interactions_by_call[Function('__main__', ('math_cli', 'controller')),
-                                                                    Function('factorial', ('math_cli', 'compute'))]
-    assert len(call_interaction.calls) == 0
-    assert len(call_interaction.responses) == 1
-    assert Return(1) in call_interaction.responses

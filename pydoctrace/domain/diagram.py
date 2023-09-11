@@ -47,7 +47,7 @@ class Raised(NamedTuple):
 
 
 class Interactions(NamedTuple):
-    calls: Iterable[int]
+    calls: Iterable[Call]
     responses: Iterable[Union[Return, Raised]]
 
 

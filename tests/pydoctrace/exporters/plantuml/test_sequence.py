@@ -7,6 +7,14 @@ from pydoctrace.domain.execution import CallEnd, Error
 from pydoctrace.exporters.plantuml.sequence import PLANTUML_SEQUENCE_FORMATTER, PlantUMLSequenceExporter
 
 
+@fixture(scope='function')
+def sequence_exporter_and_writer() -> Tuple[PlantUMLSequenceExporter, StringIO]:
+    exported_contents = StringIO()
+    exporter = PlantUMLSequenceExporter(exported_contents)
+
+    return exporter, exported_contents
+
+
 @mark.parametrize(
     ['text_to_format', 'values_by_key', 'formatted_text'],
     [
@@ -39,14 +47,6 @@ def test_plantuml_sequence_formatter(text_to_format: str, values_by_key: Dict[st
 ])
 def test_plantuml_sequence_exporter_format_arg_value(arg: Any, formatted_arg: Any):
     assert PlantUMLSequenceExporter(None).format_arg_value(arg) == formatted_arg
-
-
-@fixture(scope='function')
-def sequence_exporter_and_writer() -> Tuple[PlantUMLSequenceExporter, StringIO]:
-    exported_contents = StringIO()
-    exporter = PlantUMLSequenceExporter(exported_contents)
-
-    return exporter, exported_contents
 
 
 def test_plantuml_sequence_exporter_on_header(sequence_exporter_and_writer: Tuple[PlantUMLSequenceExporter, StringIO]):
