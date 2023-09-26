@@ -24,7 +24,7 @@ jobs:
       - name: Install poetry
         uses: abatilo/actions-poetry@v2
         with:
-          poetry-version: 1.5.1
+          poetry-version: 1.6.1
 
       - name: Define a cache for the virtual environment based on the dependencies lock file
         uses: actions/cache@v3
