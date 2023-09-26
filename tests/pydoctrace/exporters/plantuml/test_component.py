@@ -172,7 +172,11 @@ def test_plantuml_component_exporter_on_return(exporter_without_writer: PlantUML
     ['functions', 'expected_root_module'], [
         (
             [Function('main', ('__main__', ))
-            ], Module(None, {'__main__': Module('__main__', {}, {'main': Function('main', ('__main__', ))})}, {})
+            ], Module(None, {
+                '__main__': Module('__main__', {}, {
+                    'main': Function('main', ('__main__', ))
+                })
+            }, {})
         ),
         (
             [Function('main',
@@ -180,11 +184,16 @@ def test_plantuml_component_exporter_on_return(exporter_without_writer: PlantUML
             Module(
                 None, {
                     '__main__':
-                    Module('__main__', {}, {'main': Function('main', ('__main__', ))}),
+                    Module('__main__', {}, {
+                        'main': Function('main', ('__main__', ))
+                    }),
                     'pydoctrace':
                     Module(
-                        'pydoctrace',
-                        {'tracer': Module('tracer', {}, {'trace': Function('trace', ('pydoctrace', 'tracer'))})}, {}
+                        'pydoctrace', {
+                            'tracer': Module('tracer', {}, {
+                                'trace': Function('trace', ('pydoctrace', 'tracer'))
+                            })
+                        }, {}
                     ),
                 }, {}
             )
@@ -203,7 +212,11 @@ def test_plantuml_component_exporter_build_components_structure(
         # the traced function is the only function in the __main__ module
         (
             Function('main', ('__main__', )),
-            Module(None, {'__main__': Module('__main__', {}, {'main': Function('main', ('__main__', ))})}, {}), (), 0, [
+            Module(None, {
+                '__main__': Module('__main__', {}, {
+                    'main': Function('main', ('__main__', ))
+                })
+            }, {}), (), 0, [
                 'rectangle ~__main~__ #line:transparent;text:transparent {\n',
                 '  [~__main~__.main] as "main" << @trace_to_component_puml >>\n',
                 '}\n',
@@ -259,8 +272,11 @@ def test_plantuml_component_exporter_build_components_structure(
                 None, {
                     'pydoctrace':
                     Module(
-                        'pydoctrace',
-                        {'tracer': Module('tracer', {}, {'trace': Function('trace', ('pydoctrace', 'tracer'))})}, {}
+                        'pydoctrace', {
+                            'tracer': Module('tracer', {}, {
+                                'trace': Function('trace', ('pydoctrace', 'tracer'))
+                            })
+                        }, {}
                     )
                 }, {}
             ), (), 0, [
@@ -281,7 +297,9 @@ def test_plantuml_component_exporter_build_components_structure(
                                 'tracing', {
                                     'tracer':
                                     Module(
-                                        'tracer', {}, {'trace': Function('trace', ('pydoctrace', 'tracing', 'tracer'))}
+                                        'tracer', {}, {
+                                            'trace': Function('trace', ('pydoctrace', 'tracing', 'tracer'))
+                                        }
                                     )
                                 }, {}
                             )

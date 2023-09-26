@@ -75,6 +75,8 @@ def formatter_factory(formatter_class_name: str, *formatters: Callable[[Any, str
 
         return super(self.__class__, self).format_field(updated_value, updated_format_spec)
 
-    custom_formatter_class = type(formatter_class_name, (Formatter, ), {'format_field': custom_format_field})
+    custom_formatter_class = type(formatter_class_name, (Formatter, ), {
+        'format_field': custom_format_field
+    })
 
     return custom_formatter_class()
