@@ -24,5 +24,5 @@ def check_or_wrap_error(value_to_check: Any, validator: Callable) -> Any:
     try:
         if validator(value_to_check):
             return value_to_check
-    except BaseException:
-        raise FactorialError()  # set cause
+    except BaseException as base_exception:
+        raise FactorialError() from base_exception

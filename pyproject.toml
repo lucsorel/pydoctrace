@@ -1,6 +1,6 @@
 [tool.poetry]
 name = "pydoctrace"
-version = "0.1.2"
+version = "0.2.0"
 description = "Generate sequence diagrams by tracing Python code execution"
 keywords = ["sequence diagram", "documentation", "tracing", "doc-as-code", "PlantUML"]
 readme = "README.md"
@@ -13,7 +13,7 @@ license = "MIT"
 python = "^3.8"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.2.0"
+pytest = "^7.2.1"
 pytest-cov = "^4.0.0"
 
 [tool.poetry.group.lint.dependencies]
@@ -37,6 +37,7 @@ sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER", "TEST
 known_tests = ["tests"]
 
 [tool.yapf]
+# see https://github.com/google/yapf#knobs
 based_on_style = "facebook"
 # maintain consistency with other quality tools
 COLUMN_LIMIT = 120
@@ -56,16 +57,18 @@ SPLIT_BEFORE_FIRST_ARGUMENT = true
 [tool.ruff]
 # maintain consistency with other quality tools
 line-length = 120
-# activated families of verifications
-select = ["E", "F", "C"]
+# activated families of verifications (https://beta.ruff.rs/docs/rules/
+select = ["A", "B", "E", "F", "W", "N", "SIM", "C4"]
 # do not check line lengths, yapf and isort already handle them
 extend-ignore = ["E501"]
 # automatically fixes when possible
 fix = true
 
-# do not check unused imports in __init__.py files (they expose module features)
 [tool.ruff.per-file-ignores]
+# do not check unused imports in __init__.py files (they expose module features)
 "__init__.py" = ["E402"]
+# provided a more meaningful parameter name in the @classmethod than "cls"
+"pydoctrace/exporters/__init__.py" = ["N804"]
 
 [build-system]
 requires = ["poetry-core"]

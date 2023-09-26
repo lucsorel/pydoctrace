@@ -3,7 +3,9 @@ Module responsible for the execution of a function in a tracing context.
 
 It uses sys.settrace which takes:
 - a global tracing function intercepting the calls to block of codes
-- a local tracing function, returned by the global tracing function, handling the line execution
+- a local tracing function, returned by the global tracing function, handling:
+  - the line executions (ignored by this tool)
+  - the exit of the function (when returning a value or raising an error)
 - an exception tracing function, returned by the local tracing function, handling either the error propagation
   or its handling by a try-except block
 '''
@@ -13,12 +15,8 @@ from pathlib import Path
 from sys import gettrace, settrace
 from typing import Any, Callable, List, NamedTuple
 
-from pydoctrace.domain.sequence import Call, Error
+from pydoctrace.domain.execution import CallEnd, Error
 from pydoctrace.exporters import Exporter
-
-# idée complémentaire : dessiner un diagramme de modules avec des liens entre les fonctions qui s'appellent les unes les autres
-# -> https://plantuml.com/fr/activity-diagram-beta § Regroupement ou partition
-# -> https://plantuml.com/fr/deployment-diagram avec des components ou packages pour les modules
 
 
 class TracedError(NamedTuple):
@@ -40,7 +38,7 @@ def module_name_from_filepath(script_filepath: str) -> str:
     return None if script_filepath is None else Path(script_filepath).stem
 
 
-class SequenceTracer:
+class ExecutionTracer:
     '''
     Traces the execution of a callable object and pushes events to the given exporter.
 
@@ -49,12 +47,12 @@ class SequenceTracer:
     - execution frames: https://docs.python.org/3/reference/datamodel.html#frame-objects
 
     Useful calls when implementing or debugging features (the contents are added as PlantUML comments in the exported diagram):
-    self.exporter.write_raw_content(f"\n' {event} {frame=} {arg=}\n")
-    self.exporter.write_raw_content(f"' {frame.f_back=}\n")
+    self.exporter.on_raw_content(f"\n' {event} {frame=} {arg=}\n")
+    self.exporter.on_raw_content(f"' {frame.f_back=}\n")
     '''
     def __init__(self, exporter: Exporter):
         self.exporter = exporter
-        self.callers_stack: List[Call] = deque()
+        self.callers_stack: List[CallEnd] = deque()
         self.error_to_handle_with_line: TracedError = None
 
     def runfunc(self, func: Callable, *args, **kwargs) -> Any:
@@ -74,20 +72,17 @@ class SequenceTracer:
         finally:
             settrace(tracing_function)
 
-    def write_return_or_exit(self, called_end: Call, arg: Any):
+    def on_return_or_exit(self, called_end: CallEnd, arg: Any):
         # the calls stack is empty -> end of the tracing
         if len(self.callers_stack) == 0:
-            self.exporter.write_tracing_end(called_end, arg)
+            self.exporter.on_tracing_end(called_end, arg)
         # normal return call
         else:
-            self.exporter.write_return(called_end, arg)
+            self.exporter.on_return(called=called_end, caller=self.callers_stack[-1], arg=arg)
 
     def error_from_exception(self, exception: BaseException) -> Error:
         error_args = getattr(exception, 'args', None)
-        if error_args is None or len(error_args) == 0:
-            error_message = repr(exception)
-        else:
-            error_message = error_args[0]
+        error_message = repr(exception) if error_args is None or len(error_args) == 0 else error_args[0]
 
         return Error(exception.__class__.__name__, error_message)
 
@@ -107,13 +102,13 @@ class SequenceTracer:
                 fq_module_text = module_name_from_filepath(frame.f_globals.get('__file__', None))
             line_index = frame.f_lineno
             function_name = frame.f_code.co_name
-            call = Call(fq_module_text, tuple(fq_module_text.split('.')), function_name, line_index)
+            call = CallEnd(fq_module_text, tuple(fq_module_text.split('.')), function_name, line_index)
 
             # starts the tracing or handle an intermediary call
             if len(self.callers_stack) == 0:
-                self.exporter.write_tracing_start(call)
+                self.exporter.on_tracing_start(call)
             else:
-                self.exporter.write_start_call(self.callers_stack[-1]._replace(line_index=frame.f_back.f_lineno), call)
+                self.exporter.on_start_call(self.callers_stack[-1]._replace(line_index=frame.f_back.f_lineno), call)
 
             # unflags any error remaining from localtrace without return event
             self.error_to_handle_with_line = None
@@ -154,13 +149,13 @@ class SequenceTracer:
             if self.error_to_handle_with_line is None:
                 # end of the block code: removes the last caller from the stack
                 called_end = self.callers_stack.pop()._replace(line_index=frame.f_lineno)
-                self.write_return_or_exit(called_end, arg)
+                self.on_return_or_exit(called_end, arg)
             # propagates the error to the caller
             else:
                 error, _ = self.error_to_handle_with_line
                 error_called = self.callers_stack.pop()._replace(line_index=frame.f_lineno)
                 error_caller = self.callers_stack[-1]._replace(line_index=frame.f_back.f_lineno)
-                self.exporter.write_error_propagation(error_called, error_caller, error)
+                self.exporter.on_error_propagation(error_called, error_caller, error)
 
                 # unflags the error
                 self.error_to_handle_with_line = None
@@ -177,7 +172,7 @@ class SequenceTracer:
             # the error has been internally handled, a classic return occurs
             if self.error_to_handle_with_line is None:
                 called_end = self.callers_stack.pop()._replace(line_index=frame.f_lineno)
-                self.write_return_or_exit(called_end, arg)
+                self.on_return_or_exit(called_end, arg)
             # handles the flagged error
             else:
                 error, line_number_called = self.error_to_handle_with_line
@@ -188,15 +183,15 @@ class SequenceTracer:
                     error_called = self.callers_stack.pop()._replace(line_index=line_number)
                     # exits the tracing if there is no caller anymore
                     if len(self.callers_stack) == 0:
-                        self.exporter.write_unhandled_error_end(error_called, error)
+                        self.exporter.on_unhandled_error_end(error_called, error)
                     else:
                         error_caller = self.callers_stack[-1]._replace(line_index=frame.f_back.f_lineno)
-                        self.exporter.write_error_propagation(error_called, error_caller, error)
+                        self.exporter.on_error_propagation(error_called, error_caller, error)
 
                 # error was handled, normal return
                 else:
                     called_end = self.callers_stack.pop()._replace(line_index=frame.f_lineno)
-                    self.write_return_or_exit(called_end, arg)
+                    self.on_return_or_exit(called_end, arg)
 
                 # unflags the error
                 self.error_to_handle_with_line = None
