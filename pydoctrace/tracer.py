@@ -18,10 +18,6 @@ from typing import Any, Callable, List, NamedTuple
 from pydoctrace.domain.execution import CallEnd, Error
 from pydoctrace.exporters import Exporter
 
-# idée complémentaire : dessiner un diagramme de modules avec des liens entre les fonctions qui s'appellent les unes les autres
-# -> https://plantuml.com/fr/activity-diagram-beta § Regroupement ou partition
-# -> https://plantuml.com/fr/deployment-diagram avec des components ou packages pour les modules
-
 
 class TracedError(NamedTuple):
     '''
