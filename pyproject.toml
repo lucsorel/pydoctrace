@@ -67,7 +67,7 @@ fix = true
 [tool.ruff.per-file-ignores]
 # do not check unused imports in __init__.py files (they expose module features)
 "__init__.py" = ["E402"]
-# cls name for the class parameter in the @classmethod is meaningless
+# provided a more meaningful parameter name in the @classmethod than "cls"
 "pydoctrace/exporters/__init__.py" = ["N804"]
 
 [build-system]
