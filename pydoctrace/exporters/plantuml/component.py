@@ -38,7 +38,13 @@ PACKAGE_CLOSE_TPL = r'''{indentation}}}
 COMPONENT_TPL = r'''{indentation}[{function.fqn:dunder}] as "{function.name:dunder}"{stereotype}
 '''
 
+UNHANDLED_ERROR_LABEL_TPL = r'''{indentation}label {fq_error_class_name} as " "
+'''
+
 INTERACTION_CALL_TPL = r'''[{caller_function.fqn:dunder}] {arrow} [{called_function.fqn:dunder}]{arrow_label}
+'''
+
+UNHANDLED_ERROR_INTERACTION_TPL = r'''[{traced_function.fqn:dunder}] .up.> {fq_error_class_name} #line:darkred;text:darkred : {error_class_name:dunder}
 '''
 
 INDENT = '  '
@@ -51,8 +57,9 @@ class ModuleStructureVisitor:
 
     fmt: Formatter = PLANTUML_COMPONENT_FORMATTER
 
-    def __init__(self, traced_function: Function):
+    def __init__(self, traced_function: Function, unhandled_error_class_name: str):
         self.traced_function = traced_function
+        self.unhandled_error_class_name = unhandled_error_class_name
 
     def visit_module(self, module: Module, parent_module_path: Tuple[str], indentation_level: int) -> Iterable[str]:
         '''
@@ -128,11 +135,21 @@ class ModuleStructureVisitor:
         indentation = indentation_level * INDENT
 
         for function in functions:
+            is_traced_function = function == self.traced_function
+
+            # adds the placeholder indicating that an unhandled error bubbles up from the traced execution
+            if is_traced_function and self.unhandled_error_class_name is not None:
+                yield self.fmt.format(
+                    UNHANDLED_ERROR_LABEL_TPL,
+                    indentation=indentation,
+                    fq_error_class_name='.'.join([*self.traced_function.module_path, self.unhandled_error_class_name])
+                )
+
             yield self.fmt.format(
                 COMPONENT_TPL,
                 indentation=indentation,
                 function=function,
-                stereotype=' << @trace_to_component_puml >>' if function == self.traced_function else ''
+                stereotype=' << @trace_to_component_puml >>' if is_traced_function else ''
             )
 
 
@@ -155,6 +172,7 @@ class PlantUMLComponentExporter(Exporter):
         self.interaction_rank_iter = count(1, step=1)
         self.traced_function: Function = None
         self.functions: Dict[Tuple[str], Function] = {}
+        self.unhandled_error_class_name: str = None
 
     def next_interaction_rank(self) -> int:
         return next(self.interaction_rank_iter)
@@ -203,9 +221,7 @@ class PlantUMLComponentExporter(Exporter):
         pass
 
     def on_unhandled_error_end(self, called: CallEnd, error: Error):
-        # TODO add a relationship to a PlantUML label in Red with the name of the error (to indicate that the error exits unhandled the execution)?
-        # see https://plantuml.com/en/deployment-diagram#ded8ac71cf351121
-        ...
+        self.unhandled_error_class_name = error.class_name
 
     def on_footer(self):
         '''
@@ -215,10 +231,13 @@ class PlantUMLComponentExporter(Exporter):
         root_module = self.build_components_structure(self.functions.values())
 
         # writes components structure
-        self.write_components_structure(root_module, self.traced_function)
+        self.write_components_structure(root_module)
+
+        # writes the arrow representing the unhandled error bubbling out of the tracing context
+        self.write_unhandled_error_exit_interaction()
 
         # writes interactions
-        self.write_components_interactions(self.interactions_by_call)
+        self.write_components_interactions()
 
         # writes the file footer
         self.io_sink.write(FOOTER_TPL)
@@ -245,13 +264,29 @@ class PlantUMLComponentExporter(Exporter):
 
         return root_module
 
-    def write_components_structure(self, root_module: Module, traced_function: Function):
+    def write_components_structure(self, root_module: Module):
         '''
         Writes the 1st part of the PlantUML component diagram describing the structure of
         packages and modules, with the functions in them declared as UML components.
         '''
-        for component_line in ModuleStructureVisitor(traced_function).visit_module(root_module, (), 0):
+        for component_line in ModuleStructureVisitor(self.traced_function,
+                                                     self.unhandled_error_class_name).visit_module(root_module, (), 0):
             self.io_sink.write(component_line)
+
+    def write_unhandled_error_exit_interaction(self):
+        '''
+        Writes the interaction arrow between the traced function and the label
+        representing the error that bubbles out of the traced function
+        '''
+        if self.unhandled_error_class_name is not None:
+            self.io_sink.write(
+                self.fmt.format(
+                    UNHANDLED_ERROR_INTERACTION_TPL,
+                    traced_function=self.traced_function,
+                    fq_error_class_name='.'.join([*self.traced_function.module_path, self.unhandled_error_class_name]),
+                    error_class_name=self.unhandled_error_class_name
+                )
+            )
 
     def build_arrow_label_ranks(self, ranks: Iterable[Union[int, str]]) -> str:
         if len(ranks) > 7:
@@ -259,12 +294,12 @@ class PlantUMLComponentExporter(Exporter):
         else:
             return ', '.join(str(rank) for rank in ranks)
 
-    def write_components_interactions(self, interactions_by_call: Dict[Tuple[Function, Function], Interactions]):
+    def write_components_interactions(self):
         '''
         Writes the 2nd part of the PlantUML component diagram describing the calls between
         the functions as arrows between the components.
         '''
-        for (caller_function, called_function), (calls, responses) in interactions_by_call.items():
+        for (caller_function, called_function), (calls, responses) in self.interactions_by_call.items():
             is_recursive_call = caller_function == called_function
             are_in_same_module = caller_function.module_path == called_function.module_path
 

@@ -11,12 +11,9 @@ def factorial_recursive(value: int) -> int:
 
 
 def factorial_recursive_check_unhandled(value: int) -> int:
-    if not (isinstance(value, int) and value >= 0):
-        raise ValueError(f'Value must be a positive integer, got {value}.')
-    if value <= 1:
-        return value
+    is_positive_int(value)
 
-    return value * factorial_recursive(value - 1)
+    return factorial_recursive(value)
 
 
 def factorial_recursive_check_handled(value: int) -> int:
