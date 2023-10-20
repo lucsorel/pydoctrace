@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "pydoctrace"
-version = "0.2.0"
+version = "0.3.0"
 description = "Generate sequence diagrams by tracing Python code execution"
-keywords = ["sequence diagram", "documentation", "tracing", "doc-as-code", "PlantUML"]
+keywords = ["sequence diagram", "component diagram", "documentation", "tracing", "doc-as-code", "PlantUML"]
 readme = "README.md"
 repository = "https://github.com/lucsorel/pydoctrace"
 authors = ["Luc Sorel-Giffo"]
