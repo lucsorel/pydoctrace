@@ -26,3 +26,8 @@ else:
     )
     warn(fall_back_message, stacklevel=1)
     FILTER_OUT_STDLIB = FILTER_OUT_BUILTINS
+
+FILTER_OUT_TESTS = Preset(
+    exclude_call=lambda module_parts, *args: len(module_parts) > 0 and module_parts[0] in
+    ('tests', 'pytest', 'unittest', 'doctest')
+)
