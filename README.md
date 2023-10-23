@@ -130,7 +130,7 @@ poetry run pytest -v --cov=pydoctrace --cov-branch --cov-report term-missing --c
 
 # Changelog
 
-* `0.3.0`: added configurable filters to exclude function calls from the tracing process (do not trace calls to the builtins modules and functions by default)
+* `0.3.0`: added configurable filters to exclude function calls from the tracing process (do not trace calls to the builtins modules and functions by default), templating for output file names
 * `0.2.0`: PlantUML exporter for component diagrams, added unit tests
 * `0.1.2`: added Github actions for the automated tests and interaction with pre-commit.ci for the code linting
 * `0.1.1`: [deleted release] added Github actions for the automated tests and interaction with pre-commit.ci for the code linting

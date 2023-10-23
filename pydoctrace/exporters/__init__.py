@@ -1,7 +1,11 @@
 from contextlib import contextmanager
+from datetime import datetime
 from io import TextIOBase
-from typing import Any, Iterator, NamedTuple, Type
+from pathlib import Path
+from string import Template
+from typing import Any, Iterable, Iterator, NamedTuple, Type
 
+from pydoctrace.callfilter import Preset
 from pydoctrace.domain.execution import CallEnd, Error
 
 
@@ -95,6 +99,15 @@ class Exporter:
         involves a file handler resource (the export file being written) that is closed at
         the end of the context.
         '''
+
+        # hydrates datetime markers in the file name template
+        export_file_path = Template(export_file_path).safe_substitute(
+            datetime_millis=datetime.utcnow().strftime('%Y-%m-%d_%H.%M.%S_%f')[:-3]
+        )
+
+        # creates the directories leading to the file
+        Path(export_file_path).parent.mkdir(parents=True, exist_ok=True)
+
         with open(export_file_path, 'w', encoding='utf8') as diagram_file:
             exporter = exporter_class(diagram_file)
             yield exporter
@@ -109,3 +122,4 @@ class Context(NamedTuple):
     export_file_path: str
     start_module: str
     start_function_name: str
+    call_filters: Iterable[Preset]
