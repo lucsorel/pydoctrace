@@ -3,7 +3,7 @@ from functools import wraps
 from string import Template
 from typing import Callable, Iterable, Iterator, Type
 
-from pydoctrace.callfilter import Preset
+from pydoctrace.callfilter import Preset, call_filter_factory
 from pydoctrace.callfilter.presets import FILTER_OUT_STDLIB, FILTER_OUT_TESTS
 from pydoctrace.exporters import Context, Exporter
 from pydoctrace.exporters.plantuml.component import PlantUMLComponentExporter
@@ -20,7 +20,7 @@ def tracing_context_factory(context: Context) -> Iterator[ExecutionTracer]:
         # initializes the diagram file
         exporter.on_header(context.start_module, context.start_function_name)
 
-        tracer = ExecutionTracer(exporter)
+        tracer = ExecutionTracer(exporter, context.call_filter)
         try:
             yield tracer
         finally:
@@ -32,16 +32,18 @@ def context_factory(
     function_to_trace: Callable,
     exporter_class: Type[Exporter],
     export_file_path_tpl: str,
-    call_filters: Iterable[Preset] = None
+    filter_presets: Iterable[Preset] = None
 ) -> Context:
     function_module = getattr(function_to_trace, '__module__', '__root__')
     function_name = getattr(function_to_trace, '__name__', '__main__')
     export_file_path = Template(export_file_path_tpl).safe_substitute(
         function_name=function_name, function_module=function_module
     )
-    call_filters = DEFAULT_FILTERS if call_filters is None else call_filters
+    filter_presets = DEFAULT_FILTERS if filter_presets is None else filter_presets
 
-    return Context(exporter_class, export_file_path, function_module, function_name, call_filters)
+    return Context(
+        exporter_class, export_file_path, function_module, function_name, call_filter_factory(filter_presets)
+    )
 
 
 def trace_to_sequence_puml(
@@ -49,11 +51,11 @@ def trace_to_sequence_puml(
     /,
     *,
     export_file_path_tpl: str = '${function_name}-sequence.puml',
-    call_filters: Iterable[Preset] = None
+    filter_presets: Iterable[Preset] = None
 ):
     '''
     Decorates a function in order to trace its execution as a sequence diagram.
-    - call_filters: enable to remove specific calls from the execution tracing. Use provided presets or design yours.
+    - filter_presets: enable to remove specific calls from the execution tracing. Use provided presets or design yours.
       By defaults (if None), filters out calls to the tests related modules and standard library modules.
       Set to an empty iterable to disable call filtering.
 
@@ -64,7 +66,7 @@ def trace_to_sequence_puml(
         @wraps(function_to_trace)
         def traceable_func(*args, **kwargs):
             # initializes the tracing context
-            context = context_factory(function_to_trace, PlantUMLSequenceExporter, export_file_path_tpl, call_filters)
+            context = context_factory(function_to_trace, PlantUMLSequenceExporter, export_file_path_tpl, filter_presets)
 
             # runs the decorated function in a tracing context
             with tracing_context_factory(context) as execution_tracer:
@@ -83,11 +85,11 @@ def trace_to_component_puml(
     /,
     *,
     export_file_path_tpl: str = '${function_name}-component.puml',
-    call_filters: Iterable[Preset] = None
+    filter_presets: Iterable[Preset] = None
 ):
     '''
     Decorates a function in order to trace its execution as a component diagram.
-    - call_filters: enable to remove specific calls from the execution tracing. Use provided presets or design yours.
+    - filter_presets: enable to remove specific calls from the execution tracing. Use provided presets or design yours.
       By defaults (if None), filters out calls to the tests related modules and standard library modules.
       Set to an empty iterable to disable call filtering.
 
@@ -98,7 +100,9 @@ def trace_to_component_puml(
         @wraps(function_to_trace)
         def traceable_func(*args, **kwargs):
             # initializes the tracing context
-            context = context_factory(function_to_trace, PlantUMLComponentExporter, export_file_path_tpl, call_filters)
+            context = context_factory(
+                function_to_trace, PlantUMLComponentExporter, export_file_path_tpl, filter_presets
+            )
 
             # runs the decorated function in a tracing context
             with tracing_context_factory(context) as execution_tracer:

@@ -15,6 +15,7 @@ from pathlib import Path
 from sys import gettrace, settrace
 from typing import Any, Callable, List, NamedTuple
 
+from pydoctrace.callfilter import CallFilter
 from pydoctrace.domain.execution import CallEnd, Error
 from pydoctrace.exporters import Exporter
 
@@ -50,8 +51,9 @@ class ExecutionTracer:
     self.exporter.on_raw_content(f"\n' {event} {frame=} {arg=}\n")
     self.exporter.on_raw_content(f"' {frame.f_back=}\n")
     '''
-    def __init__(self, exporter: Exporter):
+    def __init__(self, exporter: Exporter, call_filter: CallFilter):
         self.exporter = exporter
+        self.call_filter = call_filter
         self.callers_stack: List[CallEnd] = deque()
         self.error_to_handle_with_line: TracedError = None
 

@@ -1,4 +1,4 @@
-from typing import Any, Callable, List, NamedTuple, Optional, Tuple
+from typing import Any, Callable, Iterable, NamedTuple, Optional, Tuple
 
 # TODO create a type alias for in·exclusion filters
 
@@ -27,11 +27,8 @@ class CallFilter:
     to help the user define exclusion rules. A preset gives the possibility to express large-grain exclusion rules
     with fine-grain inclusion rules.
     '''
-    def __init__(self):
-        self.presets: List[Preset] = []
-
-    def add_presets(self, presets: List[Preset]):
-        self.presets.extends(presets)
+    def __init__(self, presets: Iterable[Preset]):
+        self.presets: Tuple[Preset] = tuple(presets)
 
     def should_trace_call(self, module_parts: Tuple[str], function_name: str, call_depth: int) -> bool:
         '''
@@ -52,3 +49,28 @@ class CallFilter:
         )
 
         return not call_excluded
+
+
+class PassThrough(CallFilter):
+    '''
+    A light-weigth implementation which filters nothing out.
+    '''
+    def __init__(self):
+        '''
+        Initializes the parent class with an emtpy tuple
+        '''
+        super().__init__(())
+
+    def should_trace_call(self, module_parts: Tuple[str], function_name: str, call_depth: int) -> bool:
+        return True
+
+
+# singleton instance
+PASS_THROUGH = PassThrough()
+
+
+def call_filter_factory(filter_presets: Iterable[Preset]) -> CallFilter:
+    if filter_presets is None or len(filter_presets) == 0:
+        return PASS_THROUGH
+    else:
+        return CallFilter(filter_presets)

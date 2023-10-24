@@ -3,9 +3,9 @@ from datetime import datetime
 from io import TextIOBase
 from pathlib import Path
 from string import Template
-from typing import Any, Iterable, Iterator, NamedTuple, Type
+from typing import Any, Iterator, NamedTuple, Type
 
-from pydoctrace.callfilter import Preset
+from pydoctrace.callfilter import CallFilter
 from pydoctrace.domain.execution import CallEnd, Error
 
 
@@ -122,4 +122,4 @@ class Context(NamedTuple):
     export_file_path: str
     start_module: str
     start_function_name: str
-    call_filters: Iterable[Preset]
+    call_filter: CallFilter
