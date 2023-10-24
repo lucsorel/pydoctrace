@@ -1,0 +1,2 @@
+; vscode extension hack: deactivates my-pylint, which ms-python forces me to install. The project uses ruff instead
+disable=all
