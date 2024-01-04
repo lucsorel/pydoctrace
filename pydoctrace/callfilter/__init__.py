@@ -1,27 +1,11 @@
-from typing import Any, Callable, Iterable, NamedTuple, Optional, Tuple
+from typing import Iterable, Tuple
 
-# TODO create a type alias for in·exclusion filters
-
-
-class Preset(NamedTuple):
-    '''
-    Represents a set of two rules, each one being a function:
-    - exclude_call should return True to exclude the call from the tracing process, True to trace it
-    - include_call is called only if exclude_call returned True, and is expected to return True
-      to force the tracing anyway (it offers some exceptions to the exclusion rule)
-
-    The typical use-case is to exclude the call to all the functions of a given module in exclude_call,
-    then to allow the call to some functions in include_call.
-
-    Note: exclude_call must not be None, include_call can be None if the preset offers no exception rule.
-    '''
-    exclude_call: Callable[[Any], bool]
-    include_call: Optional[Callable[[Any], bool]] = None
+from pydoctrace.callfilter.presets import EXCLUDE_STDLIB_PRESET, Preset
 
 
 class CallFilter:
     '''
-    Offers the possibility to exclude a call from the tracing process to make the diagrame more concise.
+    Offers the possibility to exclude a call from the tracing process to make the diagram more concise.
 
     The method should_trace_call tells whether the call should be traced. The filter internally uses presets
     to help the user define exclusion rules. A preset gives the possibility to express large-grain exclusion rules
@@ -51,13 +35,13 @@ class CallFilter:
         return not call_excluded
 
 
-class PassThrough(CallFilter):
+class TraceAll(CallFilter):
     '''
-    A light-weigth implementation which filters nothing out.
+    A light-weight implementation which filters nothing out (traces everything).
     '''
     def __init__(self):
         '''
-        Initializes the parent class with an emtpy tuple
+        Initializes the parent class with an emtpy tuple of filtering presets
         '''
         super().__init__(())
 
@@ -66,11 +50,36 @@ class PassThrough(CallFilter):
 
 
 # singleton instance
-PASS_THROUGH = PassThrough()
+TRACE_ALL_FILTER = TraceAll()
+
+
+class TraceNone(CallFilter):
+    '''
+    A light-weight implementation which filters everything out (traces nothing).
+    '''
+    def __init__(self):
+        '''
+        Initializes the parent class with an emtpy tuple of filtering presets
+        '''
+        super().__init__(())
+
+    def should_trace_call(self, module_parts: Tuple[str], function_name: str, call_depth: int) -> bool:
+        return False
+
+
+# singleton instance
+TRACE_NONE_FILTER = TraceNone()
 
 
 def call_filter_factory(filter_presets: Iterable[Preset]) -> CallFilter:
+    '''
+    Utility function returning an instance of CallFilter ready to be used by the tracer,
+    from the given list of presets.
+    '''
     if filter_presets is None or len(filter_presets) == 0:
-        return PASS_THROUGH
+        return TRACE_ALL_FILTER
     else:
         return CallFilter(filter_presets)
+
+
+FILTER_OUT_STDLIB = call_filter_factory((EXCLUDE_STDLIB_PRESET, ))

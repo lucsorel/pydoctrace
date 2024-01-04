@@ -4,14 +4,14 @@ from string import Template
 from typing import Callable, Iterable, Iterator, Type
 
 from pydoctrace.callfilter import Preset, call_filter_factory
-from pydoctrace.callfilter.presets import FILTER_OUT_STDLIB, FILTER_OUT_TESTS
+from pydoctrace.callfilter.presets import EXCLUDE_STDLIB_PRESET, EXCLUDE_TESTS_PRESET
 from pydoctrace.exporters import Context, Exporter
 from pydoctrace.exporters.plantuml.component import PlantUMLComponentExporter
 from pydoctrace.exporters.plantuml.sequence import PlantUMLSequenceExporter
 from pydoctrace.tracer import ExecutionTracer
 
 # default filters used to remove calls from the execution tracing
-DEFAULT_FILTERS = FILTER_OUT_STDLIB, FILTER_OUT_TESTS
+DEFAULT_FILTERS = EXCLUDE_STDLIB_PRESET, EXCLUDE_TESTS_PRESET
 
 
 @contextmanager

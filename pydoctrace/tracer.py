@@ -1,7 +1,7 @@
 '''
 Module responsible for the execution of a function in a tracing context.
 
-It uses sys.settrace which takes:
+The tracing is based on the sys.settrace hook system, which takes:
 - a global tracing function intercepting the calls to block of codes
 - a local tracing function, returned by the global tracing function, handling:
   - the line executions (ignored by this tool)
@@ -98,13 +98,18 @@ class ExecutionTracer:
         '''
 
         if event == 'call':
-            # constructs the call
+            # determines whether the call should be traced or not
             fq_module_text: str = frame.f_globals.get('__name__', None)
             if fq_module_text is None:
                 fq_module_text = module_name_from_filepath(frame.f_globals.get('__file__', None))
-            line_index = frame.f_lineno
+            fq_module_parts = tuple(fq_module_text.split('.'))
             function_name = frame.f_code.co_name
-            call = CallEnd(fq_module_text, tuple(fq_module_text.split('.')), function_name, line_index)
+            if not self.call_filter.should_trace_call(fq_module_parts, function_name, len(self.callers_stack)):
+                return None
+
+            # constructs the call
+            line_index = frame.f_lineno
+            call = CallEnd(fq_module_text, fq_module_parts, function_name, line_index)
 
             # starts the tracing or handle an intermediary call
             if len(self.callers_stack) == 0:
