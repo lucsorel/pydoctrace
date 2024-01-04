@@ -5,17 +5,22 @@ from pytest import mark, raises
 from pydoctrace.doctrace import trace_to_component_puml, trace_to_sequence_puml
 
 from tests.modules.factorial import (
-    factorial_recursive, factorial_recursive_check_handled, factorial_recursive_check_unhandled,
-    factorial_reduce_lambda, factorial_reduce_multiply, factorial_with_checker
+    factorial_recursive,
+    factorial_recursive_check_handled,
+    factorial_recursive_check_unhandled,
+    factorial_reduce_lambda,
+    factorial_reduce_multiply,
+    factorial_with_checker,
 )
 
 
 @mark.parametrize(
-    ['factorial_function', 'input_param', 'expected_output'], [
+    ['factorial_function', 'input_param', 'expected_output'],
+    [
         (factorial_recursive, 6, 720),
         (factorial_reduce_lambda, 6, 720),
         (factorial_reduce_multiply, 6, 720),
-    ]
+    ],
 )
 def test_factorial_sequence(factorial_function: Callable, input_param: int, expected_output: int):
     tracable_factorial_function = trace_to_sequence_puml(factorial_function)
@@ -23,11 +28,12 @@ def test_factorial_sequence(factorial_function: Callable, input_param: int, expe
 
 
 @mark.parametrize(
-    ['factorial_function', 'input_param', 'expected_output'], [
+    ['factorial_function', 'input_param', 'expected_output'],
+    [
         (factorial_recursive, 6, 720),
         (factorial_reduce_lambda, 6, 720),
         (factorial_reduce_multiply, 6, 720),
-    ]
+    ],
 )
 def test_factorial_component(factorial_function: Callable, input_param: int, expected_output: int):
     tracable_factorial_function = trace_to_component_puml(factorial_function)

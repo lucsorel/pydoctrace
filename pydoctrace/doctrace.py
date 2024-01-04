@@ -32,7 +32,7 @@ def context_factory(
     function_to_trace: Callable,
     exporter_class: Type[Exporter],
     export_file_path_tpl: str,
-    filter_presets: Iterable[Preset] = None
+    filter_presets: Iterable[Preset] = None,
 ) -> Context:
     function_module = getattr(function_to_trace, '__module__', '__root__')
     function_name = getattr(function_to_trace, '__name__', '__main__')
@@ -51,9 +51,9 @@ def trace_to_sequence_puml(
     /,
     *,
     export_file_path_tpl: str = '${function_name}-sequence.puml',
-    filter_presets: Iterable[Preset] = None
+    filter_presets: Iterable[Preset] = None,
 ):
-    '''
+    """
     Decorates a function in order to trace its execution as a sequence diagram.
     - filter_presets: enable to remove specific calls from the execution tracing. Use provided presets or design yours.
       By defaults (if None), filters out calls to the tests related modules and standard library modules.
@@ -61,7 +61,8 @@ def trace_to_sequence_puml(
 
     - export_file_path_tpl: customizes the file path where the output will be written to.
       It can include placeholders like '${function_module}', '${function_name}', ${datetime_millis}'.
-    '''
+    """
+
     def sequence_puml_decorator(function_to_trace: Callable):
         @wraps(function_to_trace)
         def traceable_func(*args, **kwargs):
@@ -85,9 +86,9 @@ def trace_to_component_puml(
     /,
     *,
     export_file_path_tpl: str = '${function_name}-component.puml',
-    filter_presets: Iterable[Preset] = None
+    filter_presets: Iterable[Preset] = None,
 ):
-    '''
+    """
     Decorates a function in order to trace its execution as a component diagram.
     - filter_presets: enable to remove specific calls from the execution tracing. Use provided presets or design yours.
       By defaults (if None), filters out calls to the tests related modules and standard library modules.
@@ -95,7 +96,8 @@ def trace_to_component_puml(
 
     - export_file_path_tpl: customizes the file path where the output will be written to.
       It can include placeholders like '${function_module}', '${function_name}', ${datetime_millis}'.
-    '''
+    """
+
     def component_puml_decorator(function_to_trace: Callable):
         @wraps(function_to_trace)
         def traceable_func(*args, **kwargs):

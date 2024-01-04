@@ -10,7 +10,7 @@ Filter = Callable[[Tuple[str], str, int], bool]
 
 
 class Preset(NamedTuple):
-    '''
+    """
     Represents a set of two rules, each one being a function:
     - exclude_call should return True to exclude the call from the tracing process, False to trace it
     - include_call is optional and called only if exclude_call returned True, and is expected to return
@@ -20,7 +20,8 @@ class Preset(NamedTuple):
     then to allow the call to some functions in include_call.
 
     Note: exclude_call must not be None, include_call can be None if the preset offers no exception rule.
-    '''
+    """
+
     exclude_call: Filter
     include_call: Optional[Filter] = None
 
@@ -69,16 +70,16 @@ else:
         'termios', 'textwrap', 'this', 'threading', 'time', 'timeit', 'tkinter', 'token', 'tokenize', 'tomllib',
         'trace', 'traceback', 'tracemalloc', 'tty', 'turtle', 'turtledemo', 'types', 'typing', 'unicodedata',
         'unittest', 'urllib', 'uu', 'uuid', 'venv', 'warnings', 'wave', 'weakref', 'webbrowser', 'winreg', 'winsound',
-        'wsgiref', 'xdrlib', 'xml', 'xmlrpc', 'zipapp', 'zipfile', 'zipimport', 'zlib', 'zoneinfo'
-    )
+        'wsgiref', 'xdrlib', 'xml', 'xmlrpc', 'zipapp', 'zipfile', 'zipimport', 'zlib', 'zoneinfo',
+    )  # fmt: skip
 
 EXCLUDE_STDLIB_PRESET = Preset(
     exclude_call=lambda module_parts, *args: len(module_parts) > 0 and module_parts[0] in stdlib_module_names
 )
 
 EXCLUDE_TESTS_PRESET = Preset(
-    exclude_call=lambda module_parts, *args: len(module_parts) > 0 and module_parts[0] in
-    ('tests', '_pytest', 'pytest', 'unittest', 'doctest')
+    exclude_call=lambda module_parts, *args: len(module_parts) > 0
+    and module_parts[0] in ('tests', '_pytest', 'pytest', 'unittest', 'doctest')
 )
 
 

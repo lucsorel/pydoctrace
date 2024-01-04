@@ -23,7 +23,7 @@ def integration_test(
     function_to_trace: Callable,
     exporter_class: Type[Exporter],
     *presets: Preset,
-    overwrite_expected_contents: bool = False
+    overwrite_expected_contents: bool = False,
 ):
     exported_io = StringIO()
     exporter = exporter_class(exported_io)
@@ -39,17 +39,19 @@ def integration_test(
     # compares expected and produced contents
     else:
         with open(expected_exported_contents_path, encoding='utf8') as expected_contents_file:
-            for line_index, (expected_line, produced_line) in enumerate(zip(
-                    expected_contents_file.readlines(), exported_io.getvalue().splitlines(keepends=True))):
+            for line_index, (expected_line, produced_line) in enumerate(
+                zip(expected_contents_file.readlines(), exported_io.getvalue().splitlines(keepends=True))
+            ):
                 assert expected_line == produced_line, f'line {line_index + 1} of {expected_exported_contents_path}'
 
 
 @mark.parametrize(
-    ['expected_contents_file', 'depth_threshold'], [
+    ['expected_contents_file', 'depth_threshold'],
+    [
         ('test_depth_1-component-above_depth_3_preset.puml', 3),
         ('test_depth_1-component-above_depth_4_preset.puml', 4),
         ('test_depth_1-component-above_depth_5_preset.puml', 5),
-    ]
+    ],
 )
 def test_call_depth_with_threshold_of(expected_contents_file: str, depth_threshold: int):
     integration_test(

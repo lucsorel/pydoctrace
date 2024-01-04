@@ -1,4 +1,4 @@
-'''
+"""
 This module provides formatting features to be used when producing the diagram code.
 Some characters that can appear in function or module names can be interpreted by
 the diagram syntax as formatting characters and thus should be replaced by unicode
@@ -22,7 +22,7 @@ must be replaced by '' when passed to the parent Formatter.format_field() method
 because it would expect something supported by the Python formatting mini-language
 (see https://docs.python.org/3/library/string.html#formatspec). Otherwise, an error
 will be raised.
-'''
+"""
 
 from functools import reduce
 from re import Pattern
@@ -37,9 +37,9 @@ DUNDER_REPLACE_PATTERN: Pattern = re_compile('__')
 
 
 def replace_arobase_by_unicode(value: Any, format_spec: str) -> Tuple[Any, str]:
-    '''
+    """
     Replaces the '@' character by its unicode equivalent
-    '''
+    """
     if value is not None and isinstance(value, str):
         value = AROBASE_REPLACE_PATTERN.sub(AROBASE_IN_UNICODE, value)
 
@@ -60,23 +60,23 @@ def escape_dunder_with_tilde(value: Any, format_spec: str) -> Tuple[Any, str]:
 
 
 def formatter_factory(formatter_class_name: str, *formatters: Callable[[Any, str], Tuple[Any, str]]) -> Formatter:
-    '''
+    """
     Creates a custom string.Formatter with the given formatters as components.
     The formatters will be applied in the given order.
-    '''
+    """
+
     def custom_format_field(self: Formatter, value: Any, format_spec: str):
-        '''
+        """
         Applies all the formatters on the given value and format_spec, which are updated by each formatter.
-        '''
+        """
         updated_value, updated_format_spec = reduce(
             lambda value_and_format_spec, formatter: formatter(value_and_format_spec[0], value_and_format_spec[1]),
-            formatters, (value, format_spec)
+            formatters,
+            (value, format_spec),
         )
 
         return super(self.__class__, self).format_field(updated_value, updated_format_spec)
 
-    custom_formatter_class = type(formatter_class_name, (Formatter, ), {
-        'format_field': custom_format_field
-    })
+    custom_formatter_class = type(formatter_class_name, (Formatter,), {'format_field': custom_format_field})
 
     return custom_formatter_class()

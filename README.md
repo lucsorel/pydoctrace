@@ -153,7 +153,7 @@ Pull-requests are welcome and will be processed on a best-effort basis.
 Pull requests must follow the guidelines enforced by the `pre-commit` hooks:
 
 - commit messages must follow the Angular conventions enforced by the `commitlint` hook
-- code formatting must follow the conventions enforced by the `isort` and `yapf` hooks
+- code formatting must follow the conventions enforced by the `isort` and `ruff-formatter` hooks
 - code linting should not detect code smells in your contributions, this is checked by the `ruff` hook
 
 When requesting a feature, please consider involving yourself in the review process once it is developed.
@@ -191,7 +191,7 @@ I use the [redjue.git-commit-plugin](https://marketplace.visualstudio.com/items?
 
 ### Code formatting
 
-This project uses `isort` and `yapf` to format the code.
+This project uses `isort` and `ruff` to format the code.
 The guidelines are expressed in their respective sections in the [pyproject.toml](pyproject.toml) file.
 
 ### Best practices

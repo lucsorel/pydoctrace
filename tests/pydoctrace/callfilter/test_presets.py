@@ -3,8 +3,12 @@ from typing import Type
 from pytest import mark, raises
 
 from pydoctrace.callfilter.presets import (
-    EXCLUDE_BUILTINS_PRESET, EXCLUDE_CALL_DEPTH_PRESET_FACTORY, EXCLUDE_DEPTH_BELOW_5_PRESET, EXCLUDE_TESTS_PRESET,
-    Preset, _depth_preset_factory
+    EXCLUDE_BUILTINS_PRESET,
+    EXCLUDE_CALL_DEPTH_PRESET_FACTORY,
+    EXCLUDE_DEPTH_BELOW_5_PRESET,
+    EXCLUDE_TESTS_PRESET,
+    Preset,
+    _depth_preset_factory,
 )
 
 
@@ -27,12 +31,13 @@ def test_filter_test_raises_in():
 
 
 @mark.parametrize(
-    ['invalid_depth_threshold', 'expected_error_class', 'expected_error_message'], [
+    ['invalid_depth_threshold', 'expected_error_class', 'expected_error_message'],
+    [
         (None, TypeError, 'depth threshold must be an integer'),
         ('zero', TypeError, 'depth threshold must be an integer'),
         (1.0, TypeError, 'depth threshold must be an integer'),
         (-1, ValueError, "depth threshold must be a positive integer, got '-1'"),
-    ]
+    ],
 )
 def test_depth_preset_factory_with_invalid_values(
     invalid_depth_threshold, expected_error_class: Type, expected_error_message: str
@@ -63,7 +68,8 @@ def test_exclude_call_depth_preset_factory():
 
 
 @mark.parametrize(
-    ['call_depth', 'expected_exclusion'], [
+    ['call_depth', 'expected_exclusion'],
+    [
         (0, False),
         (1, False),
         (2, False),
@@ -72,7 +78,7 @@ def test_exclude_call_depth_preset_factory():
         (5, False),
         (6, True),
         (10, True),
-    ]
+    ],
 )
 def test_exclude_depth_below_5_preset(call_depth: int, expected_exclusion: bool):
     module_parts = 'package', 'module'
