@@ -6,6 +6,7 @@ repos:
     -   id: check-toml
     # trims all whitespace from the end of each line
     -   id: trailing-whitespace
+        exclude: tests.*.puml
     # ensures that all files end in a newline and only a newline
     -   id: end-of-file-fixer
     # prevents large files from being committed (>100kb)
