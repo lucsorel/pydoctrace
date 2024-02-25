@@ -28,14 +28,14 @@ class Exporter:
     def on_raw_content(self, raw_content: str):
         """
         Writes the given raw content to the sink.
-        This is not to be used directly.
+        This method is not meant to be used directly.
         """
         self.io_sink.write(raw_content)
 
     def on_tracing_start(self, called: CallEnd):
         """
-        Writes the diagram content leading to the first call (the decorated function).
-        This may be a no-operation
+        Writes the diagram content leading to the first call (to the decorated function).
+        This may be a no-operation.
         """
         raise NotImplementedError()
 
@@ -89,6 +89,12 @@ class Exporter:
         """
         raise NotImplementedError()
 
+    @staticmethod
+    def _template_dynamic_tags(export_file_path_template: str, moment: datetime) -> str:
+        return Template(export_file_path_template).safe_substitute(
+            datetime_millis=moment.strftime('%Y-%m-%d_%H.%M.%S_%f')[:-3]
+        )
+
     @classmethod
     @contextmanager
     def export_manager_factory(exporter_class: 'Exporter', export_file_path: str) -> Iterator['Exporter']:
@@ -102,13 +108,12 @@ class Exporter:
         """
 
         # hydrates datetime markers in the file name template
-        export_file_path = Template(export_file_path).safe_substitute(
-            datetime_millis=datetime.utcnow().strftime('%Y-%m-%d_%H.%M.%S_%f')[:-3]
-        )
+        export_file_path = exporter_class._template_dynamic_tags(export_file_path, datetime.utcnow())
 
         # creates the directories leading to the file
         Path(export_file_path).parent.mkdir(parents=True, exist_ok=True)
 
+        # opens the contents file in write mode and yields the exporter that can write into it
         with open(export_file_path, 'w', encoding='utf8') as diagram_file:
             exporter = exporter_class(diagram_file)
             yield exporter

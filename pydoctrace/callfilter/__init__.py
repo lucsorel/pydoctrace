@@ -39,6 +39,9 @@ class CallFilter:
         return not call_excluded
 
 
+# The following filters are defined for testing purposes; the tracing decorators involve presets instead of filters.
+
+
 class TraceAll(CallFilter):
     """
     A light-weight implementation which filters nothing out (traces everything).

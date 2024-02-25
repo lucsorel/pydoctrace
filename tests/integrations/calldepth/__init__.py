@@ -1,3 +1,8 @@
+"""
+Some nested function calls used to test filtering the tracing with thresholds of calls depth.
+"""
+
+
 def depth_6():
     return 6
 

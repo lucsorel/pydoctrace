@@ -82,6 +82,8 @@ EXCLUDE_TESTS_PRESET = Preset(
     and module_parts[0] in ('tests', '_pytest', 'pytest', 'unittest', 'doctest')
 )
 
+TRACE_ALL_PRESET = Preset(exclude_call=lambda *args: False)
+
 
 def _depth_preset_factory(depth_threshold: int) -> Preset:
     """
