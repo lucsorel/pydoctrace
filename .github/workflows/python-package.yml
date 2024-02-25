@@ -7,7 +7,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  MIN_CODE_COVERAGE_PERCENT: 81
+  MIN_CODE_COVERAGE_PERCENT: 82
 
 jobs:
   build:
@@ -22,9 +22,9 @@ jobs:
           python-version-file: '.python-version'
 
       - name: Install poetry
-        uses: abatilo/actions-poetry@v2
+        uses: abatilo/actions-poetry@v3
         with:
-          poetry-version: 1.6.1
+          poetry-version: 1.7.1
 
       - name: Define a cache for the virtual environment based on the dependencies lock file
         uses: actions/cache@v3
