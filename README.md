@@ -163,10 +163,10 @@ When requesting a feature, please consider involving yourself in the review proc
 The code conventions are described and enforced by [pre-commit hooks](https://pre-commit.com/hooks.html) to maintain style and quality consistency across the code base.
 The hooks are declared in the [.pre-commit-config.yaml](.pre-commit-config.yaml) file.
 
-When you contribute, set the git hooks (pre-commit and commit-msg types) on your development environment:
+When you contribute, set the git hooks (`pre-commit` and `commit-msg` types) on your development environment:
 
 ```sh
-poetry run pre-commit install --hook-type pre-commit --hook-type commit-msg
+poetry run pre-commit install
 ```
 
 Before committing, you can check your changes manually with:
