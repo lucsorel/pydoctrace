@@ -1,4 +1,4 @@
-'''
+"""
 Module dedicated to the export of sequence diagrams in the PlanUML syntax.
 
 Bibliography:
@@ -6,7 +6,7 @@ Bibliography:
 - https://plantuml.com/en/guide, https://plantuml.com/fr/guide: the PlanUML syntax books. Pages or sections of interest:
   - 24.6 Colors: color names
 - https://plantuml-documentation.readthedocs.io/en/latest/formatting/all-skin-params.html: "All skin parameters available in PlantUML in alphabetical order."
-'''
+"""
 
 from string import Formatter
 from typing import Any
@@ -20,51 +20,51 @@ PLANTUML_SEQUENCE_FORMATTER: Formatter = formatter_factory(
     'PlantUMLSequenceFormatter', replace_arobase_by_unicode, escape_dunder_with_tilde
 )
 
-HEADER_TPL = r'''@startuml {diagram_name}
+HEADER_TPL = r"""@startuml {diagram_name}
 skinparam BoxPadding 10
 skinparam ParticipantPadding 5
 skinparam NoteBackgroundColor Cornsilk
 skinparam NoteBorderColor Sienna
 hide footbox
-'''
+"""
 
-TRACING_START_TPL = r'''
+TRACING_START_TPL = r"""
 [o-> "{called.fq_module_text:dunder}\n{called.function_name:dunder}"
 note right: line {called.line_index}
-'''
+"""
 
-CALL_START_TPL = r'''
+CALL_START_TPL = r"""
 "{caller.fq_module_text:dunder}\n{caller.function_name:dunder}" -> "{called.fq_module_text:dunder}\n{called.function_name:dunder}" ++
 note left: line {caller.line_index}
 note right: line {called.line_index}
-'''
+"""
 
-CALL_END_TPL = r'''
+CALL_END_TPL = r"""
 return {arg:dunder}
 note right: line {called.line_index}
 |||
-'''
+"""
 
-ERROR_PROPAGATION_TPL = r'''
+ERROR_PROPAGATION_TPL = r"""
 "{error_caller.fq_module_text:dunder}\n{error_caller.function_name:dunder}" o<--x "{error_called.fq_module_text:dunder}\n{error_called.function_name:dunder}": ""{error.class_name}""\n{error.message}
 deactivate "{error_called.fq_module_text:dunder}\n{error_called.function_name:dunder}"
 note right: line {error_called.line_index}
 note left: line {error_caller.line_index}
-'''
+"""
 
-TRACING_END_TPL = r'''
+TRACING_END_TPL = r"""
 [<-- "{called.fq_module_text:dunder}\n{called.function_name:dunder}": {arg:dunder}
 note right: line {called.line_index}
-'''
+"""
 
-UNHANDLED_ERROR_END_TPL = r'''
+UNHANDLED_ERROR_END_TPL = r"""
 [<-->x "{called.fq_module_text:dunder}\n{called.function_name:dunder}": ""{error.class_name}""\n{error.message}
 note right: line {called.line_index}
-'''
+"""
 
 
 class PlantUMLSequenceExporter(Exporter):
-    '''
+    """
     Exports the sequence diagram in the PlantUML format.
 
     The nature of the sequence diagram and the corresponding PlantUML syntax
@@ -73,7 +73,7 @@ class PlantUMLSequenceExporter(Exporter):
 
     For efficiency reasons, instances of the execution domain model are used
     directly without converting them into diagram model instances.
-    '''
+    """
 
     fmt: Formatter = PLANTUML_SEQUENCE_FORMATTER
 

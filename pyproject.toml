@@ -1,8 +1,8 @@
 [tool.poetry]
 name = "pydoctrace"
-version = "0.2.0"
+version = "0.3.0"
 description = "Generate sequence diagrams by tracing Python code execution"
-keywords = ["sequence diagram", "documentation", "tracing", "doc-as-code", "PlantUML"]
+keywords = ["sequence diagram", "component diagram", "documentation", "tracing", "doc-as-code", "PlantUML"]
 readme = "README.md"
 repository = "https://github.com/lucsorel/pydoctrace"
 authors = ["Luc Sorel-Giffo"]
@@ -13,62 +13,62 @@ license = "MIT"
 python = "^3.8"
 
 [tool.poetry.group.dev.dependencies]
-pytest = "^7.2.1"
-pytest-cov = "^4.0.0"
+pytest = "^8.0.2"
+pytest-cov = "^4.1.0"
 
 [tool.poetry.group.lint.dependencies]
-pre-commit = "^3.3.3"
+pre-commit = "^3.5"
 
 [tool.pytest.ini_options]
 console_output_style = "count"
 
 [tool.isort]
+py_version=38
 # maintain consistency with other quality tools
 line_length = 120
-# consistency with yapf: mode 5
+# consistency with ruff-format: mode 3
 # from third_party import (
-#     lib1, lib2, lib3, lib4,
-#     lib5, etc.
+#     lib1,
+#     lib2,
+#     [...]
+#     libn,
 # )
-multi_line_output = 5
-balanced_wrapping = false
+multi_line_output = 3
+include_trailing_comma = true
 # TESTS->known_tests: create a specific section for imports of tests modules
+# (this is the reason why isort is still used alongside ruff-format)
 sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER", "TESTS"]
 known_tests = ["tests"]
 
-[tool.yapf]
-# see https://github.com/google/yapf#knobs
-based_on_style = "facebook"
-# maintain consistency with other quality tools
-COLUMN_LIMIT = 120
-COALESCE_BRACKETS = false
-DEDENT_CLOSING_BRACKETS = true
-INDENT_DICTIONARY_VALUE = false
-EACH_DICT_ENTRY_ON_SEPARATE_LINE = true
-FORCE_MULTILINE_DICT = true
-JOIN_MULTIPLE_LINES = false
-SPACES_AROUND_DEFAULT_OR_NAMED_ASSIGN = false
-SPLIT_BEFORE_CLOSING_BRACKET = true
-SPLIT_BEFORE_DICT_SET_GENERATOR = true
-SPLIT_COMPLEX_COMPREHENSION = true
-SPLIT_BEFORE_EXPRESSION_AFTER_OPENING_PAREN = true
-SPLIT_BEFORE_FIRST_ARGUMENT = true
-
 [tool.ruff]
+target-version = "py38"
 # maintain consistency with other quality tools
 line-length = 120
-# activated families of verifications (https://beta.ruff.rs/docs/rules/
-select = ["A", "B", "E", "F", "W", "N", "SIM", "C4"]
-# do not check line lengths, yapf and isort already handle them
-extend-ignore = ["E501"]
 # automatically fixes when possible
 fix = true
 
-[tool.ruff.per-file-ignores]
+[tool.ruff.lint]
+# activated families of verifications (https://beta.ruff.rs/docs/rules/
+select = ["B", "E", "F", "W", "N", "SIM", "C4"]
+# do not check:
+# - E501 line lengths: ruff formatter already handles them
+# - B905 zip(*, strict=True): strict was introduced in Python 3.10+
+extend-ignore = ["E501", "B905"]
+
+[tool.ruff.lint.isort]
+forced-separate = ["tests"]
+
+[tool.ruff.lint.per-file-ignores]
 # do not check unused imports in __init__.py files (they expose module features)
 "__init__.py" = ["E402"]
 # provided a more meaningful parameter name in the @classmethod than "cls"
 "pydoctrace/exporters/__init__.py" = ["N804"]
+
+[tool.ruff.format]
+indent-style = "space"
+line-ending = "lf"
+quote-style = "single"
+
 
 [build-system]
 requires = ["poetry-core"]

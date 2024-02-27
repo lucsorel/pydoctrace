@@ -73,6 +73,139 @@ poetry add pydoctrace
 pipenv install pydoctrace
 ```
 
+## Usage
+
+Import a decorator and apply it to the functions whom execution you want to trace:
+
+```python
+# in my_package/my_module.py
+from pydoctrace.doctrace import trace_to_component_puml, trace_to_sequence_puml
+
+def main(parameter):
+    validate(parameter)
+    do_something(parameter)
+
+@trace_to_component_puml
+def validate(parameter):
+    validate_is_not_none(parameter)
+    validate_is_in_database(parameter)
+
+@trace_to_sequence_puml
+def do_something(parameter):
+    stuff = load_stuff(parameter)
+    save_work(process_job(stuff))
+```
+
+Executing `main()` will create 2 diagram files in the current working directory:
+
+* `validate-component.puml`: a PlantUML **component** diagram showing the interactions between `validate()` as the start, and `validate_is_not_none()` and `validate_is_in_database()` (and all their inner function calls, if any)
+* `do_something-sequence.puml`: a PlantUML **sequence** diagram showing the interactions between `do_something()` as the start, and `load_stuff()`, `process_job()` and `save_work()` (and all their inner function calls, if any)
+
+You can then view these files either:
+
+* using an extension for your IDE: `jebbs.plantuml` for Codium / vsCode, `7017-plantuml-integration` for PyCharm
+* online at www.plantuml.com/plantuml/uml/
+
+### Customize the filename
+
+The `export_file_path_tpl` attribute of the decorators allows you to define another file path and name:
+
+```python
+# in my_package/my_module.py
+from pydoctrace.doctrace import trace_to_component_puml, trace_to_sequence_puml
+
+# will create a 'validate-component.puml' file in the 'doc/my_package-my_module' folder
+# (pydoctrace will create the subdirectories if necessary)
+@trace_to_component_puml(
+    export_file_path_tpl='doc/my_package-my_module/validate-component.puml'
+)
+def validate(parameter):
+    ...
+
+# will create a 'my_package.my_module/do_something-2024-02-27_19.16.09_473-sequence.puml' file
+@trace_to_sequence_puml(
+    export_file_path_tpl='${function_module}/${function_name}-${datetime_millis}-sequence.puml'
+)
+def do_something(parameter):
+    ...
+```
+
+As you can see, you can use the following template tags in the file name:
+
+* `${function_module}`: which resolves to `do_something.__module__`, `'my_package.my_module'` in the example
+* `${function_name}`: which resolves to `do_something.__name__`, `'do_something'` in the example
+* `${datetime_millis}`: the datetime in ISO-ish format compatible with filenames (Windows does not support `':'` in filenames).
+If the traced function is called several times during the execution, including `${datetime_millis}` in the filename template will generate different files that won't overwrite themselves
+
+### Filter what is traced
+
+To keep the generated diagrams useful and legible, you probably want to exclude some calls from the tracing (such as calls to `print(...)` or `json.load(...)`).
+`pydoctrace` comes with ready-to-use [presets](pydoctrace/callfilter/presets.py) that you can combine to filter out some calls you do not want to document:
+
+* `EXCLUDE_BUILTINS_PRESET`: prevents from tracing calls to [built-in functions](https://docs.python.org/3/library/functions.html) (`print`, `len`, `all`, `any`, etc.)
+* `EXCLUDE_STDLIB_PRESET`: prevents from tracing calls to all [the standard library modules](https://docs.python.org/3/library/index.html) (`csv`, `json`, `dataclass`, etc.)
+* `EXCLUDE_TESTS_PRESET`: prevents from tracing calls to functions belonging to the `tests`, `_pytest`, `pytest`, `unittest`, `doctest` modules.
+This one is particularly useful when you want to generate some documentation from an automated tests
+* `EXCLUDE_DEPTH_BELOW_5_PRESET`: prevents from tracing any calls that involve a call stack of more than five levels after the traced function
+
+By default, `EXCLUDE_STDLIB_PRESET` and `EXCLUDE_TESTS_PRESET` are activated.
+Specify something else at the decorator level to change the call filtering.
+
+```python
+from pydoctrace.doctrace import trace_to_component_puml
+from pydoctrace.callfilter.presets import (
+    EXCLUDE_BUILTINS_PRESET,
+    EXCLUDE_CALL_DEPTH_PRESET_FACTORY,
+    EXCLUDE_DEPTH_BELOW_5_PRESET,
+    EXCLUDE_STDLIB_PRESET,
+    EXCLUDE_TESTS_PRESET,
+    TRACE_ALL_PRESET,
+)
+
+# an empty presets list traces everything
+@trace_to_component_puml(filter_presets=[])
+def validate(parameter):
+    ...
+# or you can be explicit
+from pydoctrace.callfilter.presets import TRACE_ALL_PRESET
+@trace_to_component_puml(filter_presets=[TRACE_ALL_PRESET])
+def validate(parameter):
+    ...
+
+# filter at a custom callstack level
+from pydoctrace.callfilter.presets import EXCLUDE_CALL_DEPTH_PRESET_FACTORY
+ABOVE_3_PRESET = EXCLUDE_CALL_DEPTH_PRESET_FACTORY(3)
+@trace_to_component_puml(filter_presets=[ABOVE_3_PRESET])
+def call():
+    call_1()
+
+def call_1():
+    call_2()
+
+def call_2():
+    call_3()
+
+def call_3(): # will not be traced in the diagram
+    ...
+
+# documents the behavior of do_something without the noise of
+# the test framework nor the standard libray
+from my_package.my_module import do_something
+from pydoctrace.callfilter.presets import EXCLUDE_STDLIB_PRESET, EXCLUDE_TESTS_PRESET
+@trace_to_component_puml(filter_presets=[EXCLUDE_STDLIB_PRESET, EXCLUDE_TESTS_PRESET])
+def test_do_something():
+    assert do_something('param') is not None
+
+# for test-generated documentation, you can also use the decorator programmatically
+def test_do_something():
+    traceable_do_something = trace_to_component_puml(
+        export_file_path_tpl='doc/${function_module}/${function_name}-component.puml',
+        filter_presets=[EXCLUDE_STDLIB_PRESET, EXCLUDE_TESTS_PRESET, ABOVE_3_PRESET]
+    )(do_something)
+
+    assert traceable_do_something('param') is not None
+```
+
 ## Purposes and mechanisms
 
 The purpose of `pydoctrace` is to document the execution of some code to illustrate the behavior and the structure of the code base.
@@ -125,14 +258,17 @@ pytest -v
 Code coverage (with [missed branch statements](https://pytest-cov.readthedocs.io/en/latest/config.html?highlight=--cov-branch)):
 
 ```sh
-poetry run pytest -v --cov=pydoctrace --cov-branch --cov-report term-missing --cov-fail-under 80
+poetry run pytest -v --cov=pydoctrace --cov-branch --cov-report term-missing --cov-fail-under 82
 ```
 
 # Changelog
 
+* `0.3.0`: added configurable filters to exclude function calls from the tracing process (do not trace calls to the standard library modules and functions by default), templating for output file names.
+Thank you [Philippe Tony](https://github.com/philippetony) for suggesting filtering out calls above a certain calls depth from the traced function.
+Started integration tests
 * `0.2.0`: PlantUML exporter for component diagrams, added unit tests
-* `0.1.2`: added github actions for the automated tests and interaction with pre-commit.ci for the code linting
-* `0.1.1`: [deleted release] added github actions for the automated tests and interaction with pre-commit.ci for the code linting
+* `0.1.2`: added Github actions for the automated tests and interaction with pre-commit.ci for the code linting
+* `0.1.1`: [deleted release: wrong contents] added Github actions for the automated tests and interaction with pre-commit.ci for the code linting
 * `0.1.0`: ✨ first release, PlantUML exporter for sequence diagrams; diagram files are saved in the current working directory
 
 # Licence
@@ -150,7 +286,7 @@ Pull-requests are welcome and will be processed on a best-effort basis.
 Pull requests must follow the guidelines enforced by the `pre-commit` hooks:
 
 - commit messages must follow the Angular conventions enforced by the `commitlint` hook
-- code formatting must follow the conventions enforced by the `isort` and `yapf` hooks
+- code formatting must follow the conventions enforced by the `isort` and `ruff-formatter` hooks
 - code linting should not detect code smells in your contributions, this is checked by the `ruff` hook
 
 When requesting a feature, please consider involving yourself in the review process once it is developed.
@@ -160,10 +296,10 @@ When requesting a feature, please consider involving yourself in the review proc
 The code conventions are described and enforced by [pre-commit hooks](https://pre-commit.com/hooks.html) to maintain style and quality consistency across the code base.
 The hooks are declared in the [.pre-commit-config.yaml](.pre-commit-config.yaml) file.
 
-When you contribute, set the git hooks (pre-commit and commit-msg types) on your development environment:
+When you contribute, set the git hooks (`pre-commit` and `commit-msg` types) on your development environment:
 
 ```sh
-poetry run pre-commit install --hook-type pre-commit --hook-type commit-msg
+poetry run pre-commit install
 ```
 
 Before committing, you can check your changes manually with:
@@ -188,7 +324,7 @@ I use the [redjue.git-commit-plugin](https://marketplace.visualstudio.com/items?
 
 ### Code formatting
 
-This project uses `isort` and `yapf` to format the code.
+This project uses `isort` and `ruff` to format the code.
 The guidelines are expressed in their respective sections in the [pyproject.toml](pyproject.toml) file.
 
 ### Best practices

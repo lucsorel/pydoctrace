@@ -1,10 +1,10 @@
-'''
+"""
 Module dedicated to the export of component diagrams in the PlanUML syntax.
 
 Bibliography:
 - https://plantuml.com/en/component-diagram: syntax of component diagrams
 The domain modeling involves NamedTuples because they are used as dictionary keys (thus need to be hashable and immutable).
-'''
+"""
 
 from collections import defaultdict, deque
 from io import TextIOBase
@@ -20,40 +20,40 @@ from pydoctrace.exporters.plantuml import FOOTER_TPL
 
 PLANTUML_COMPONENT_FORMATTER: Formatter = formatter_factory('PlantUMLComponentFormatter', escape_dunder_with_tilde)
 
-HEADER_TPL = r'''@startuml {diagram_name}
+HEADER_TPL = r"""@startuml {diagram_name}
 skinparam BoxPadding 10
 skinparam componentStyle rectangle
 
-'''
+"""
 
-PACKAGE_OPEN_TPL = r'''{indentation}package {package_name:dunder} {{
-'''
+PACKAGE_OPEN_TPL = r"""{indentation}package {package_name:dunder} {{
+"""
 
-STYLED_PACKAGE_OPEN_TPL = r'''{indentation}{package_type} {package_name:dunder}{package_styling} {{
-'''
+STYLED_PACKAGE_OPEN_TPL = r"""{indentation}{package_type} {package_name:dunder}{package_styling} {{
+"""
 
-PACKAGE_CLOSE_TPL = r'''{indentation}}}
-'''
+PACKAGE_CLOSE_TPL = r"""{indentation}}}
+"""
 
-COMPONENT_TPL = r'''{indentation}[{function.fqn:dunder}] as "{function.name:dunder}"{stereotype}
-'''
+COMPONENT_TPL = r"""{indentation}[{function.fqn:dunder}] as "{function.name:dunder}"{stereotype}
+"""
 
-UNHANDLED_ERROR_LABEL_TPL = r'''{indentation}label {fq_error_class_name} as " "
-'''
+UNHANDLED_ERROR_LABEL_TPL = r"""{indentation}label {fq_error_class_name} as " "
+"""
 
-INTERACTION_CALL_TPL = r'''[{caller_function.fqn:dunder}] {arrow} [{called_function.fqn:dunder}]{arrow_label}
-'''
+INTERACTION_CALL_TPL = r"""[{caller_function.fqn:dunder}] {arrow} [{called_function.fqn:dunder}]{arrow_label}
+"""
 
-UNHANDLED_ERROR_INTERACTION_TPL = r'''[{traced_function.fqn:dunder}] .up.> {fq_error_class_name} #line:darkred;text:darkred : {error_class_name:dunder}
-'''
+UNHANDLED_ERROR_INTERACTION_TPL = r"""[{traced_function.fqn:dunder}] .up.> {fq_error_class_name} #line:darkred;text:darkred : {error_class_name:dunder}
+"""
 
 INDENT = '  '
 
 
 class ModuleStructureVisitor:
-    '''
+    """
     Recursively produces the PlantUML syntax of the components structure using a visitor pattern on the root module.
-    '''
+    """
 
     fmt: Formatter = PLANTUML_COMPONENT_FORMATTER
 
@@ -62,9 +62,9 @@ class ModuleStructureVisitor:
         self.unhandled_error_class_name = unhandled_error_class_name
 
     def visit_module(self, module: Module, parent_module_path: Tuple[str], indentation_level: int) -> Iterable[str]:
-        '''
+        """
         Yields the PlantUML code dedicated to package or modules hierarchy.
-        '''
+        """
         has_functions = len(module.functions) > 0
 
         # groups the module name with the parent ones if the module contains no function and only one sub-module
@@ -72,7 +72,7 @@ class ModuleStructureVisitor:
             sub_module = list(module.sub_modules.values())[0]
 
             # skips the wrapping module if it has no name (root module)
-            sub_module_parent_path = parent_module_path if module.name is None else parent_module_path + (module.name, )
+            sub_module_parent_path = parent_module_path if module.name is None else parent_module_path + (module.name,)
 
             yield from self.visit_module(sub_module, sub_module_parent_path, indentation_level)
 
@@ -108,7 +108,7 @@ class ModuleStructureVisitor:
                 indentation=indentation,
                 package_type=package_type,
                 package_name=module.name,
-                package_styling=package_styling
+                package_styling=package_styling,
             )
 
             # declares the functions as components
@@ -125,13 +125,13 @@ class ModuleStructureVisitor:
             yield self.fmt.format(PACKAGE_CLOSE_TPL, indentation=indentation)
 
     def visit_functions(self, functions: Iterable[Function], indentation_level: int) -> Iterable[str]:
-        '''
+        """
         Yields the PlantUML code dedicated to the functions of a module.
 
         All functions are handled in the same visit because:
         - they share the same indentation, being the functions of the same module
         - the recursive visit stops here, being the branch leaves of the module hierarchy
-        '''
+        """
         indentation = indentation_level * INDENT
 
         for function in functions:
@@ -142,33 +142,34 @@ class ModuleStructureVisitor:
                 yield self.fmt.format(
                     UNHANDLED_ERROR_LABEL_TPL,
                     indentation=indentation,
-                    fq_error_class_name='.'.join([*self.traced_function.module_path, self.unhandled_error_class_name])
+                    fq_error_class_name='.'.join([*self.traced_function.module_path, self.unhandled_error_class_name]),
                 )
 
             yield self.fmt.format(
                 COMPONENT_TPL,
                 indentation=indentation,
                 function=function,
-                stereotype=' << @trace_to_component_puml >>' if is_traced_function else ''
+                stereotype=' << @trace_to_component_puml >>' if is_traced_function else '',
             )
 
 
 class PlantUMLComponentExporter(Exporter):
-    '''
+    """
     Exports the component diagram in the PlantUML format.
 
     The PlantUML syntax of the component diagram expects the components structure to be declared
     before the arrows representing the calls. Therefore, this exporter must store all the traced calls
     before exporting the diagram in order to build the components structure from the traced calls,
     then to export the arrows representing the calls.
-    '''
+    """
 
     fmt: Formatter = PLANTUML_COMPONENT_FORMATTER
 
     def __init__(self, io_sink: TextIOBase):
         super().__init__(io_sink)
-        self.interactions_by_call: Dict[Tuple[Function, Function],
-                                        Interactions] = defaultdict(lambda: Interactions(deque(), deque()))
+        self.interactions_by_call: Dict[Tuple[Function, Function], Interactions] = defaultdict(
+            lambda: Interactions(deque(), deque())
+        )
         self.interaction_rank_iter = count(1, step=1)
         self.traced_function: Function = None
         self.functions: Dict[Tuple[str], Function] = {}
@@ -178,10 +179,10 @@ class PlantUMLComponentExporter(Exporter):
         return next(self.interaction_rank_iter)
 
     def function_from_call(self, caller: CallEnd) -> Function:
-        '''
+        """
         Retrieves the Function from the cache, or creates it from the given Call and caches it.
-        '''
-        function_key = caller.fq_module_tuple + (caller.function_name, )
+        """
+        function_key = caller.fq_module_tuple + (caller.function_name,)
         function = self.functions.get(function_key)
         if function is None:
             function = Function(caller.function_name, caller.fq_module_tuple)
@@ -196,8 +197,9 @@ class PlantUMLComponentExporter(Exporter):
         (self.interactions_by_call[caller, called]).responses.append(Return(self.next_interaction_rank()))
 
     def add_raised_interaction(self, called: Function, caller: Function, error_class_name: str):
-        (self.interactions_by_call[caller,
-                                   called]).responses.append(Raised(self.next_interaction_rank(), error_class_name))
+        (self.interactions_by_call[caller, called]).responses.append(
+            Raised(self.next_interaction_rank(), error_class_name)
+        )
 
     def on_header(self, start_module: str, start_func_name: str):
         diagram_name = f'{start_module}.{start_func_name}-component'
@@ -224,9 +226,9 @@ class PlantUMLComponentExporter(Exporter):
         self.unhandled_error_class_name = error.class_name
 
     def on_footer(self):
-        '''
+        """
         At this stage, the exporter has all the information it needs to produce the contents of the diagram file
-        '''
+        """
         # builds components structure
         root_module = self.build_components_structure(self.functions.values())
 
@@ -243,10 +245,10 @@ class PlantUMLComponentExporter(Exporter):
         self.io_sink.write(FOOTER_TPL)
 
     def build_components_structure(self, functions: Iterable[Function]) -> Module:
-        '''
+        """
         Creates the modules hierarchy with their functions from the calls
         traced during the execution.
-        '''
+        """
         root_module = Module(None, {}, {})
 
         for function in functions:
@@ -265,26 +267,27 @@ class PlantUMLComponentExporter(Exporter):
         return root_module
 
     def write_components_structure(self, root_module: Module):
-        '''
+        """
         Writes the 1st part of the PlantUML component diagram describing the structure of
         packages and modules, with the functions in them declared as UML components.
-        '''
-        for component_line in ModuleStructureVisitor(self.traced_function,
-                                                     self.unhandled_error_class_name).visit_module(root_module, (), 0):
+        """
+        for component_line in ModuleStructureVisitor(
+            self.traced_function, self.unhandled_error_class_name
+        ).visit_module(root_module, (), 0):
             self.io_sink.write(component_line)
 
     def write_unhandled_error_exit_interaction(self):
-        '''
+        """
         Writes the interaction arrow between the traced function and the label
         representing the error that bubbles out of the traced function
-        '''
+        """
         if self.unhandled_error_class_name is not None:
             self.io_sink.write(
                 self.fmt.format(
                     UNHANDLED_ERROR_INTERACTION_TPL,
                     traced_function=self.traced_function,
                     fq_error_class_name='.'.join([*self.traced_function.module_path, self.unhandled_error_class_name]),
-                    error_class_name=self.unhandled_error_class_name
+                    error_class_name=self.unhandled_error_class_name,
                 )
             )
 
@@ -295,10 +298,10 @@ class PlantUMLComponentExporter(Exporter):
             return ', '.join(str(rank) for rank in ranks)
 
     def write_components_interactions(self):
-        '''
+        """
         Writes the 2nd part of the PlantUML component diagram describing the calls between
         the functions as arrows between the components.
-        '''
+        """
         for (caller_function, called_function), (calls, responses) in self.interactions_by_call.items():
             is_recursive_call = caller_function == called_function
             are_in_same_module = caller_function.module_path == called_function.module_path
@@ -313,7 +316,7 @@ class PlantUMLComponentExporter(Exporter):
                     caller_function=caller_function,
                     arrow=call_arrow,
                     called_function=called_function,
-                    arrow_label=call_label
+                    arrow_label=call_label,
                 )
             )
 
@@ -329,7 +332,7 @@ class PlantUMLComponentExporter(Exporter):
                             caller_function=caller_function,
                             arrow=returns_arrow,
                             called_function=called_function,
-                            arrow_label=returns_label
+                            arrow_label=returns_label,
                         )
                     )
 
@@ -344,6 +347,6 @@ class PlantUMLComponentExporter(Exporter):
                         caller_function=caller_function,
                         arrow=raiseds_arrow,
                         called_function=called_function,
-                        arrow_label=raiseds_label
+                        arrow_label=raiseds_label,
                     )
                 )

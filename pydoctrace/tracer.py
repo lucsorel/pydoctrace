@@ -1,37 +1,39 @@
-'''
+"""
 Module responsible for the execution of a function in a tracing context.
 
-It uses sys.settrace which takes:
+The tracing is based on the sys.settrace hook system, which takes:
 - a global tracing function intercepting the calls to block of codes
 - a local tracing function, returned by the global tracing function, handling:
   - the line executions (ignored by this tool)
   - the exit of the function (when returning a value or raising an error)
 - an exception tracing function, returned by the local tracing function, handling either the error propagation
   or its handling by a try-except block
-'''
+"""
 
 from collections import deque
 from pathlib import Path
 from sys import gettrace, settrace
 from typing import Any, Callable, List, NamedTuple
 
+from pydoctrace.callfilter import CallFilter
 from pydoctrace.domain.execution import CallEnd, Error
 from pydoctrace.exporters import Exporter
 
 
 class TracedError(NamedTuple):
-    '''
+    """
     An error being traced by the tracer, holding metadata:
     - error: Error: information for display purposes in the diagram
     - line_index: int: the line at which the error entered the execution frame
     - exception: BaseException: the corresponding Python exception being traced
-    '''
+    """
+
     error: Error
     line_index: int
 
 
 def module_name_from_filepath(script_filepath: str) -> str:
-    '''Return a plausible module name for the script_filepath.'''
+    """Return a plausible module name for the script_filepath."""
     # base = os.path.basename(script_filepath)
     # filename, _ = os.path.splitext(base)
     # return filename
@@ -39,7 +41,7 @@ def module_name_from_filepath(script_filepath: str) -> str:
 
 
 class ExecutionTracer:
-    '''
+    """
     Traces the execution of a callable object and pushes events to the given exporter.
 
     The implementation of the tracing functions are based on the documentation of:
@@ -49,16 +51,18 @@ class ExecutionTracer:
     Useful calls when implementing or debugging features (the contents are added as PlantUML comments in the exported diagram):
     self.exporter.on_raw_content(f"\n' {event} {frame=} {arg=}\n")
     self.exporter.on_raw_content(f"' {frame.f_back=}\n")
-    '''
-    def __init__(self, exporter: Exporter):
+    """
+
+    def __init__(self, exporter: Exporter, call_filter: CallFilter):
         self.exporter = exporter
+        self.call_filter = call_filter
         self.callers_stack: List[CallEnd] = deque()
         self.error_to_handle_with_line: TracedError = None
 
     def runfunc(self, func: Callable, *args, **kwargs) -> Any:
-        '''
+        """
         Runs the given function with the given positional and keyword arguments and traces the calls sequence.
-        '''
+        """
 
         # ensures that a callable object has been passed
         if func is None or not callable(func):
@@ -87,22 +91,27 @@ class ExecutionTracer:
         return Error(exception.__class__.__name__, error_message)
 
     def globaltrace(self, frame, event: str, arg: Any):
-        '''
+        """
         Handler for call events.
 
         Returns:
         - a custom tracing function to trace the execution of the block
         - None if the execution block should be ignored
-        '''
+        """
 
         if event == 'call':
-            # constructs the call
+            # determines whether the call should be traced or not
             fq_module_text: str = frame.f_globals.get('__name__', None)
             if fq_module_text is None:
                 fq_module_text = module_name_from_filepath(frame.f_globals.get('__file__', None))
-            line_index = frame.f_lineno
+            fq_module_parts = tuple(fq_module_text.split('.'))
             function_name = frame.f_code.co_name
-            call = CallEnd(fq_module_text, tuple(fq_module_text.split('.')), function_name, line_index)
+            if not self.call_filter.should_trace_call(fq_module_parts, function_name, len(self.callers_stack)):
+                return None
+
+            # constructs the call
+            line_index = frame.f_lineno
+            call = CallEnd(fq_module_text, fq_module_parts, function_name, line_index)
 
             # starts the tracing or handle an intermediary call
             if len(self.callers_stack) == 0:
@@ -119,7 +128,7 @@ class ExecutionTracer:
             return self.localtrace
 
     def localtrace(self, frame, event: str, arg: Any):
-        '''
+        """
         Handler for events happening within a call:
         - 'return' event: ends the current call, removes it from the callers stack
 
@@ -134,7 +143,7 @@ class ExecutionTracer:
         - localtrace:return (when an error is flagged in the tracer) or exceptiontrace:return (there should always be an error in the tracer):
           - if their line numbers are the same -> it is an error propagation
           - if their line numbers are different -> the error has been handled, it is a classic return event
-        '''
+        """
 
         if event == 'exception':
             # creates the error and flags it so that it can be handled either by the localtrace or exceptiontrace

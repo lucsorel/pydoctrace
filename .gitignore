@@ -134,8 +134,9 @@ cython_debug/
 
 # End of https://www.toptal.com/developers/gitignore/api/visualstudiocode,python
 
-# do not version PlantUML files
+# do not version PlantUML files, except integration test files
 *.puml
+!test_*.puml
 # do not version bibliography files
 biblio/
 
