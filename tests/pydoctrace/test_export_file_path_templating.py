@@ -1,6 +1,7 @@
 """
 Automated tests documenting where and when template tags in the exported file name are handled.
 """
+
 from datetime import datetime
 from pathlib import Path
 from typing import Callable, NamedTuple
