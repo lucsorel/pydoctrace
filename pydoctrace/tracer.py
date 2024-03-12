@@ -91,6 +91,13 @@ class ExecutionTracer:
         return Error(exception.__class__.__name__, error_message)
 
     def get_module_path_and_function_name(self, frame) -> Tuple[str, str]:
+        # special case for named tuple instantiation
+        if (
+            frame.f_globals.get('_tuple_new') is not None
+            and (namedtuple_class := frame.f_locals.get('_cls')) is not None
+        ):
+            return f'{namedtuple_class.__module__}.{namedtuple_class.__name__}', frame.f_code.co_name
+
         fq_module_text: str = frame.f_globals.get('__name__', None)
         if fq_module_text is None:
             fq_module_text = module_name_from_filepath(frame.f_globals.get('__file__', None))
