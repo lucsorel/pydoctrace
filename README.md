@@ -263,6 +263,7 @@ poetry run pytest -v --cov=pydoctrace --cov-branch --cov-report term-missing --c
 
 # Changelog
 
+* `0.4.0`: handle module and method names for named tuple
 * `0.3.0`: added configurable filters to exclude function calls from the tracing process (do not trace calls to the standard library modules and functions by default), templating for output file names.
 Thank you [Philippe Tony](https://github.com/philippetony) for suggesting filtering out calls above a certain calls depth from the traced function.
 Started integration tests
