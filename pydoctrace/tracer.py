@@ -13,7 +13,7 @@ The tracing is based on the sys.settrace hook system, which takes:
 from collections import deque
 from pathlib import Path
 from sys import gettrace, settrace
-from typing import Any, Callable, List, NamedTuple
+from typing import Any, Callable, List, NamedTuple, Tuple
 
 from pydoctrace.callfilter import CallFilter
 from pydoctrace.domain.execution import CallEnd, Error
@@ -90,6 +90,13 @@ class ExecutionTracer:
 
         return Error(exception.__class__.__name__, error_message)
 
+    def get_module_path_and_function_name(self, frame) -> Tuple[str, str]:
+        fq_module_text: str = frame.f_globals.get('__name__', None)
+        if fq_module_text is None:
+            fq_module_text = module_name_from_filepath(frame.f_globals.get('__file__', None))
+
+        return fq_module_text, frame.f_code.co_name
+
     def globaltrace(self, frame, event: str, arg: Any):
         """
         Handler for call events.
@@ -100,12 +107,15 @@ class ExecutionTracer:
         """
 
         if event == 'call':
-            # determines whether the call should be traced or not
-            fq_module_text: str = frame.f_globals.get('__name__', None)
-            if fq_module_text is None:
-                fq_module_text = module_name_from_filepath(frame.f_globals.get('__file__', None))
+            # self.exporter.on_raw_content(f"\n' {event} {arg=}")
+            # self.exporter.on_raw_content(f"\n' frame.f_globals={ {**frame.f_globals, '__builtins__':None, '__doc__':None}}")
+            # self.exporter.on_raw_content(f"\n' {frame.f_locals=}")
+            # # self.exporter.on_raw_content(f"\n' {getattr(frame.f_code, 'co_qualname', None)=}")
+            # self.exporter.on_raw_content(f"\n' {frame.f_code.co_name=}\n")
+            fq_module_text, function_name = self.get_module_path_and_function_name(frame)
             fq_module_parts = tuple(fq_module_text.split('.'))
-            function_name = frame.f_code.co_name
+
+            # determines whether the call should be traced or not
             if not self.call_filter.should_trace_call(fq_module_parts, function_name, len(self.callers_stack)):
                 return None
 
