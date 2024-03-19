@@ -11,6 +11,7 @@ The tracing is based on the sys.settrace hook system, which takes:
 """
 
 from collections import deque
+from inspect import isclass
 from pathlib import Path
 from sys import gettrace, settrace
 from typing import Any, Callable, List, NamedTuple, Tuple
@@ -34,9 +35,6 @@ class TracedError(NamedTuple):
 
 def module_name_from_filepath(script_filepath: str) -> str:
     """Return a plausible module name for the script_filepath."""
-    # base = os.path.basename(script_filepath)
-    # filename, _ = os.path.splitext(base)
-    # return filename
     return None if script_filepath is None else Path(script_filepath).stem
 
 
@@ -102,7 +100,24 @@ class ExecutionTracer:
         if fq_module_text is None:
             fq_module_text = module_name_from_filepath(frame.f_globals.get('__file__', None))
 
-        return fq_module_text, frame.f_code.co_name
+        # searches for the function name and code in the globals of the calling frame
+        callable_code = frame.f_code
+        callable_name = callable_code.co_name
+        calling_frame = frame.f_back
+        calling_frame_globals = calling_frame.f_globals
+        if (function_candidate := calling_frame_globals.get(callable_name)) is not None and (
+            getattr(function_candidate, '__code__', None) == callable_code
+        ):
+            return fq_module_text, callable_name
+
+        for class_candidate in (entry for entry in calling_frame_globals.values() if isclass(entry)):
+            if (method_candidate := getattr(class_candidate, callable_name, None)) is not None and (
+                getattr(method_candidate, '__code__', None) == callable_code
+            ):
+                return f'{class_candidate.__module__}.{class_candidate.__name__}', callable_name
+
+        # default
+        return fq_module_text, callable_name
 
     def globaltrace(self, frame, event: str, arg: Any):
         """
@@ -121,6 +136,8 @@ class ExecutionTracer:
             # self.exporter.on_raw_content(f"\n' {frame.f_code.co_name=}\n")
             fq_module_text, function_name = self.get_module_path_and_function_name(frame)
             fq_module_parts = tuple(fq_module_text.split('.'))
+            if function_name in {'<lambda>', '<listcomp>', '<dictcomp>', '<setcomp>', '<genexpr>'}:
+                return self.globaltrace
 
             # determines whether the call should be traced or not
             if not self.call_filter.should_trace_call(fq_module_parts, function_name, len(self.callers_stack)):

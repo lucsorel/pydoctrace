@@ -17,7 +17,7 @@ repos:
     -   id: name-tests-test
         # tests match test_.*\.py
         args: [--pytest-test-first]
-        exclude: tests.modules.*|tests.integrations.classes.namedtuple.py
+        exclude: tests.modules.*|tests.integrations.classes.basicclass.py|tests.integrations.classes.dataclass.py|tests.integrations.classes.namedtuple.py
 
 -   repo: https://github.com/alessandrojcm/commitlint-pre-commit-hook
     rev: v9.11.0
