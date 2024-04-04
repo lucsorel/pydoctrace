@@ -14,7 +14,6 @@ def create_person(firstname, lastname):
     return Person(firstname, lastname)
 
 
-def main_named_tuple():
+def main_namedtuple():
     url_parts: ParseResult = urlsplit('http://Suzie/Q')
-    # return f'{url_parts.netloc} {url_parts.path[1:]}'
     return create_person(url_parts.netloc, url_parts.path[1:]).full_name()

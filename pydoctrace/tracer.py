@@ -11,7 +11,6 @@ The tracing is based on the sys.settrace hook system, which takes:
 """
 
 from collections import deque
-from inspect import isclass
 from pathlib import Path
 from sys import gettrace, settrace
 from typing import Any, Callable, List, NamedTuple, Tuple
@@ -110,11 +109,21 @@ class ExecutionTracer:
         ):
             return fq_module_text, callable_name
 
-        for class_candidate in (entry for entry in calling_frame_globals.values() if isclass(entry)):
-            if (method_candidate := getattr(class_candidate, callable_name, None)) is not None and (
+        # searches the function in the methods of the local variables in the calling frame
+        calling_frame_locals = calling_frame.f_locals
+        class_candidates = []
+        for entry in calling_frame_locals.values():
+            if (method_candidate := getattr(entry.__class__, callable_name, None)) is not None and (
                 getattr(method_candidate, '__code__', None) == callable_code
             ):
-                return f'{class_candidate.__module__}.{class_candidate.__name__}', callable_name
+                if method_candidate.__module__ == entry.__class__.__module__:
+                    class_candidates.append(f'{entry.__class__.__module__}.{entry.__class__.__name__}')
+                else:
+                    class_candidates.append(f'{method_candidate.__module__}')
+
+        # returns the class holding the method only if there is no ambiguity
+        if len(class_candidates) == 1:
+            return class_candidates[0], callable_name
 
         # default
         return fq_module_text, callable_name
@@ -132,12 +141,15 @@ class ExecutionTracer:
             # self.exporter.on_raw_content(f"\n' {event} {arg=}")
             # self.exporter.on_raw_content(f"\n' frame.f_globals={ {**frame.f_globals, '__builtins__':None, '__doc__':None}}")
             # self.exporter.on_raw_content(f"\n' {frame.f_locals=}")
-            # # self.exporter.on_raw_content(f"\n' {getattr(frame.f_code, 'co_qualname', None)=}")
+            # self.exporter.on_raw_content(f"\n' {getattr(frame.f_code, 'co_qualname', None)=}") # available only for Python 3.11+
             # self.exporter.on_raw_content(f"\n' {frame.f_code.co_name=}\n")
             fq_module_text, function_name = self.get_module_path_and_function_name(frame)
+
+            # # skips the tracing for inline code blocks
+            # if function_name in {'<lambda>', '<listcomp>', '<dictcomp>', '<setcomp>', '<genexpr>'}:
+            #     return self.globaltrace
+
             fq_module_parts = tuple(fq_module_text.split('.'))
-            if function_name in {'<lambda>', '<listcomp>', '<dictcomp>', '<setcomp>', '<genexpr>'}:
-                return self.globaltrace
 
             # determines whether the call should be traced or not
             if not self.call_filter.should_trace_call(fq_module_parts, function_name, len(self.callers_stack)):
