@@ -26,9 +26,6 @@ skinparam componentStyle rectangle
 
 """
 
-PACKAGE_OPEN_TPL = r"""{indentation}package {package_name:dunder} {{
-"""
-
 STYLED_PACKAGE_OPEN_TPL = r"""{indentation}{package_type} {package_name:dunder}{package_styling} {{
 """
 
@@ -81,7 +78,13 @@ class ModuleStructureVisitor:
         elif len(parent_module_path) > 0:
             indentation = indentation_level * INDENT
 
-            yield self.fmt.format(PACKAGE_OPEN_TPL, indentation=indentation, package_name='.'.join(parent_module_path))
+            yield self.fmt.format(
+                STYLED_PACKAGE_OPEN_TPL,
+                indentation=indentation,
+                package_type='package',
+                package_name='.'.join(parent_module_path),
+                package_styling='',
+            )
 
             yield from self.visit_module(module, (), indentation_level + 1)
 
