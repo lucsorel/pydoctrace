@@ -104,9 +104,10 @@ class ExecutionTracer:
             if frame.f_code.co_name in {'<lambda>', '<listcomp>', '<dictcomp>', '<setcomp>', '<genexpr>'}:
                 return self.globaltrace
 
-            *callable_domain_parts, callable_name = self.frame_scrapper.scrap_callable_domain_and_name(frame).split('.')
-            callable_domain_parts = tuple(callable_domain_parts)
-            callable_domain_path = '.'.join(callable_domain_parts)
+            callable_domain_path, callable_name = self.frame_scrapper.scrap_callable_domain_and_name(frame).rsplit(
+                '.', maxsplit=1
+            )
+            callable_domain_parts = tuple(callable_domain_path.split('.'))
 
             # determines whether the call should be traced or not
             if not self.call_filter.should_trace_call(callable_domain_parts, callable_name, len(self.callers_stack)):
