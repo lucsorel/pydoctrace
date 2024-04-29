@@ -100,10 +100,9 @@ class ExecutionTracer:
             # self.exporter.on_raw_content(f"\n' {getattr(frame.f_code, 'co_qualname', None)=}") # available only for Python 3.11+
             # self.exporter.on_raw_content(f"\n' {frame.f_code.co_name=}\n")
 
-            # callable_name = frame.f_code.co_name
-            # # skips the tracing for inline code blocks
-            # if callable_name in {'<lambda>', '<listcomp>', '<dictcomp>', '<setcomp>', '<genexpr>'}:
-            #     return self.globaltrace
+            # skips the tracing for inline code blocks
+            if frame.f_code.co_name in {'<lambda>', '<listcomp>', '<dictcomp>', '<setcomp>', '<genexpr>'}:
+                return self.globaltrace
 
             *callable_domain_parts, callable_name = self.frame_scrapper.scrap_callable_domain_and_name(frame).split('.')
             callable_domain_parts = tuple(callable_domain_parts)
