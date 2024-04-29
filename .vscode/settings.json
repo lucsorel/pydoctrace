@@ -5,6 +5,6 @@
     "python.testing.unittestEnabled": false,
     "python.testing.pytestEnabled": true,
     "python.terminal.activateEnvironment": false,
-    "GitCommitPlugin.MaxSubjectCharacters": 120,
+    "GitCommitPlugin.MaxSubjectCharacters": 150,
     "GitCommitPlugin.ShowEmoji": false
 }
