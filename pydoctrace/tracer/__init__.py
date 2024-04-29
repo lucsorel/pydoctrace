@@ -11,13 +11,13 @@ The tracing is based on the sys.settrace hook system, which takes:
 """
 
 from collections import deque
-from pathlib import Path
 from sys import gettrace, settrace
-from typing import Any, Callable, List, NamedTuple, Tuple
+from typing import Any, Callable, List, NamedTuple
 
 from pydoctrace.callfilter import CallFilter
 from pydoctrace.domain.execution import CallEnd, Error
 from pydoctrace.exporters import Exporter
+from pydoctrace.tracer.framescrapperpre311 import FrameScrapperBeforePy311
 
 
 class TracedError(NamedTuple):
@@ -32,11 +32,6 @@ class TracedError(NamedTuple):
     line_index: int
 
 
-def module_name_from_filepath(script_filepath: str) -> str:
-    """Return a plausible module name for the script_filepath."""
-    return None if script_filepath is None else Path(script_filepath).stem
-
-
 class ExecutionTracer:
     """
     Traces the execution of a callable object and pushes events to the given exporter.
@@ -44,8 +39,9 @@ class ExecutionTracer:
     The implementation of the tracing functions are based on the documentation of:
     - sys.settrace: https://docs.python.org/3/library/sys.html#sys.settrace
     - execution frames: https://docs.python.org/3/reference/datamodel.html#frame-objects
+    - associated code objects: https://docs.python.org/3/reference/datamodel.html#code-objects
 
-    Useful calls when implementing or debugging features (the contents are added as PlantUML comments in the exported diagram):
+    Useful calls when implementing or debugging features (the contents are added as comments in the exported diagram):
     self.exporter.on_raw_content(f"\n' {event} {frame=} {arg=}\n")
     self.exporter.on_raw_content(f"' {frame.f_back=}\n")
     """
@@ -55,6 +51,7 @@ class ExecutionTracer:
         self.call_filter = call_filter
         self.callers_stack: List[CallEnd] = deque()
         self.error_to_handle_with_line: TracedError = None
+        self.frame_scrapper = FrameScrapperBeforePy311()
 
     def runfunc(self, func: Callable, *args, **kwargs) -> Any:
         """
@@ -87,54 +84,13 @@ class ExecutionTracer:
 
         return Error(exception.__class__.__name__, error_message)
 
-    def get_module_path_and_function_name(self, frame) -> Tuple[str, str]:
-        # special case for named tuple instantiation
-        if (
-            frame.f_globals.get('_tuple_new') is not None
-            and (namedtuple_class := frame.f_locals.get('_cls')) is not None
-        ):
-            return f'{namedtuple_class.__module__}.{namedtuple_class.__name__}', frame.f_code.co_name
-
-        fq_module_text: str = frame.f_globals.get('__name__', None)
-        if fq_module_text is None:
-            fq_module_text = module_name_from_filepath(frame.f_globals.get('__file__', None))
-
-        # searches for the function name and code in the globals of the calling frame
-        callable_code = frame.f_code
-        callable_name = callable_code.co_name
-        calling_frame = frame.f_back
-        calling_frame_globals = calling_frame.f_globals
-        if (function_candidate := calling_frame_globals.get(callable_name)) is not None and (
-            getattr(function_candidate, '__code__', None) == callable_code
-        ):
-            return fq_module_text, callable_name
-
-        # searches the function in the methods of the local variables in the calling frame
-        calling_frame_locals = calling_frame.f_locals
-        class_candidates = []
-        for entry in calling_frame_locals.values():
-            if (method_candidate := getattr(entry.__class__, callable_name, None)) is not None and (
-                getattr(method_candidate, '__code__', None) == callable_code
-            ):
-                if method_candidate.__module__ == entry.__class__.__module__:
-                    class_candidates.append(f'{entry.__class__.__module__}.{entry.__class__.__name__}')
-                else:
-                    class_candidates.append(f'{method_candidate.__module__}')
-
-        # returns the class holding the method only if there is no ambiguity
-        if len(class_candidates) == 1:
-            return class_candidates[0], callable_name
-
-        # default
-        return fq_module_text, callable_name
-
     def globaltrace(self, frame, event: str, arg: Any):
         """
         Handler for call events.
 
         Returns:
         - a custom tracing function to trace the execution of the block
-        - None if the execution block should be ignored
+        - None if the execution block should be ignored from the tracing process
         """
 
         if event == 'call':
@@ -143,21 +99,23 @@ class ExecutionTracer:
             # self.exporter.on_raw_content(f"\n' {frame.f_locals=}")
             # self.exporter.on_raw_content(f"\n' {getattr(frame.f_code, 'co_qualname', None)=}") # available only for Python 3.11+
             # self.exporter.on_raw_content(f"\n' {frame.f_code.co_name=}\n")
-            fq_module_text, function_name = self.get_module_path_and_function_name(frame)
 
+            # callable_name = frame.f_code.co_name
             # # skips the tracing for inline code blocks
-            # if function_name in {'<lambda>', '<listcomp>', '<dictcomp>', '<setcomp>', '<genexpr>'}:
+            # if callable_name in {'<lambda>', '<listcomp>', '<dictcomp>', '<setcomp>', '<genexpr>'}:
             #     return self.globaltrace
 
-            fq_module_parts = tuple(fq_module_text.split('.'))
+            *callable_domain_parts, callable_name = self.frame_scrapper.scrap_callable_domain_and_name(frame).split('.')
+            callable_domain_parts = tuple(callable_domain_parts)
+            callable_domain_path = '.'.join(callable_domain_parts)
 
             # determines whether the call should be traced or not
-            if not self.call_filter.should_trace_call(fq_module_parts, function_name, len(self.callers_stack)):
+            if not self.call_filter.should_trace_call(callable_domain_parts, callable_name, len(self.callers_stack)):
                 return None
 
             # constructs the call
             line_index = frame.f_lineno
-            call = CallEnd(fq_module_text, fq_module_parts, function_name, line_index)
+            call = CallEnd(callable_domain_path, callable_domain_parts, callable_name, line_index)
 
             # starts the tracing or handle an intermediary call
             if len(self.callers_stack) == 0:
