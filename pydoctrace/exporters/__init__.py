@@ -108,6 +108,7 @@ class Exporter:
         """
 
         # hydrates datetime markers in the file name template
+        # in 3.12, replace 'datetime.utcnow()' by 'datetime.datetime.now(datetime.UTC)'
         export_file_path = exporter_class._template_dynamic_tags(export_file_path, datetime.utcnow())
 
         # creates the directories leading to the file
