@@ -8,7 +8,7 @@ from pydoctrace.exporters.plantuml.sequence import PlantUMLSequenceExporter
 from pydoctrace.tracer import ExecutionTracer
 
 from tests import TESTS_FOLDER
-from tests.integrations import integration_test
+from tests.integrations import diagram_integration_test
 from tests.integrations.calldepth import depth_1
 from tests.modules.factorial import factorial_recursive
 
@@ -22,9 +22,8 @@ from tests.modules.factorial import factorial_recursive
     ],
 )
 def test_call_depth_with_threshold_of(expected_contents_file: str, depth_threshold: int):
-    integration_test(
+    output = diagram_integration_test(
         TESTS_FOLDER / 'integrations' / 'calldepth' / expected_contents_file,
-        12,
         depth_1,
         None,
         None,
@@ -32,6 +31,7 @@ def test_call_depth_with_threshold_of(expected_contents_file: str, depth_thresho
         EXCLUDE_CALL_DEPTH_PRESET_FACTORY(depth_threshold),
         # overwrite_expected_contents=True
     )
+    assert output == 12
 
 
 def test_tracer_sequence():

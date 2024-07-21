@@ -17,7 +17,7 @@ from typing import Any, Callable, List, NamedTuple
 from pydoctrace.callfilter import CallFilter
 from pydoctrace.domain.execution import CallEnd, Error
 from pydoctrace.exporters import Exporter
-from pydoctrace.tracer.framescrapperpre311 import FrameScrapperBeforePy311
+from pydoctrace.tracer.framescrapper import FrameScrapper
 
 
 class TracedError(NamedTuple):
@@ -51,7 +51,7 @@ class ExecutionTracer:
         self.call_filter = call_filter
         self.callers_stack: List[CallEnd] = deque()
         self.error_to_handle_with_line: TracedError = None
-        self.frame_scrapper = FrameScrapperBeforePy311()
+        self.frame_scrapper = FrameScrapper()
 
     def runfunc(self, func: Callable, *args, **kwargs) -> Any:
         """

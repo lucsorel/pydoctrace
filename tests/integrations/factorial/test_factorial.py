@@ -5,7 +5,7 @@ from pytest import mark, raises
 from pydoctrace.exporters.plantuml.component import PlantUMLComponentExporter
 from pydoctrace.exporters.plantuml.sequence import PlantUMLSequenceExporter
 
-from tests.integrations import TESTS_INTEGRATIONS_FOLDER, _get_file_suffix, integration_test
+from tests.integrations import TESTS_INTEGRATIONS_FOLDER, _get_file_suffix, diagram_integration_test
 from tests.modules.factorial import (
     factorial_recursive,
     factorial_recursive_check_handled,
@@ -16,7 +16,13 @@ from tests.modules.factorial import (
 )
 
 
-@mark.parametrize('exporter_class', [PlantUMLSequenceExporter, PlantUMLComponentExporter])
+@mark.parametrize(
+    'exporter_class',
+    [
+        PlantUMLSequenceExporter,
+        PlantUMLComponentExporter,
+    ],
+)
 @mark.parametrize(
     ['factorial_function', 'input_param', 'expected_output'],
     [
@@ -27,11 +33,10 @@ from tests.modules.factorial import (
 )
 def test_factorial_tracing(exporter_class: Type, factorial_function: Callable, input_param: int, expected_output: int):
     suffix = _get_file_suffix(exporter_class)
-    integration_test(
+    output = diagram_integration_test(
         TESTS_INTEGRATIONS_FOLDER
         / 'factorial'
         / f'test_{factorial_function.__name__}-{input_param}-{expected_output}-{suffix}.puml',
-        expected_output,
         factorial_function,
         (input_param,),
         None,
@@ -39,16 +44,17 @@ def test_factorial_tracing(exporter_class: Type, factorial_function: Callable, i
         # overwrite_expected_contents=True,
     )
 
+    assert output == expected_output
+
 
 @mark.parametrize('exporter_class', [PlantUMLSequenceExporter, PlantUMLComponentExporter])
 def test_factorial_unhandled_error(exporter_class):
     suffix = _get_file_suffix(exporter_class)
     with raises(ValueError) as value_error:
-        integration_test(
+        diagram_integration_test(
             TESTS_INTEGRATIONS_FOLDER
             / 'factorial'
             / f'test_handled_error-factorial_recursive_check_unhandled-None-ValueError-{suffix}.puml',
-            None,
             factorial_recursive_check_unhandled,
             (None,),
             None,
@@ -69,14 +75,15 @@ def test_factorial_unhandled_error(exporter_class):
 def test_factorial_handled_error(exporter_class, factorial_function, invalid_input_param, expected_output):
     suffix = _get_file_suffix(exporter_class)
 
-    integration_test(
+    output = diagram_integration_test(
         TESTS_INTEGRATIONS_FOLDER
         / 'factorial'
         / f'test_handled_error-{factorial_function.__name__}-{invalid_input_param}-{expected_output}-{suffix}.puml',
-        expected_output,
         factorial_function,
         (invalid_input_param,),
         None,
         exporter_class,
         # overwrite_expected_contents=True,
     )
+
+    assert output == expected_output

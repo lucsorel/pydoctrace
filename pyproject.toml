@@ -21,6 +21,9 @@ pre-commit = "^3.5"
 
 [tool.pytest.ini_options]
 console_output_style = "count"
+testpaths = [
+    "tests",
+]
 
 [tool.isort]
 py_version=38

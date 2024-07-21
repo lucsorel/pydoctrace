@@ -1,7 +1,7 @@
 from dataclasses import dataclass
 
 
-@dataclass
+@dataclass(order=True, unsafe_hash=True)
 class Person:
     firstname: str
     lastname: str
@@ -15,11 +15,14 @@ def create_person(firstname, lastname):
 
 
 def main_dataclass():
-    person = create_person('Suzie', 'Q')
-    # print(f'{locals()=}')
-    # print(f'{person=}')
+    suzie = create_person('Suzie', 'Q')
+    suzie_hash = hash(suzie)
+    frankie = Person('Frankie', 'Manning')
+    frankie_repr = repr(frankie)
+    comparison = suzie == frankie
+    print(f'{suzie=}')
 
-    return person.full_name()
+    return suzie.full_name(), suzie_hash, frankie_repr, comparison
 
 
 if __name__ == '__main__':

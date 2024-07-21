@@ -1,5 +1,7 @@
 from typing import List
 
+from tests.modules.classes.collector import Collector
+
 
 class Game:
     class Board:
@@ -42,7 +44,10 @@ class TicTacToe(Game):
             super().__init__(length, length)
 
         def __repr__(self) -> str:
-            return '\n'.join('|'.join(' ' if cell is None else str(cell) for cell in line) for line in self.matrix)
+            if getattr(self, 'matrix', None) is None:
+                return '|'
+            else:
+                return '\n'.join('|'.join(' ' if cell is None else str(cell) for cell in line) for line in self.matrix)
 
     def __init__(self, white: Game.Player, black: Game.Player, board_size: int):
         super().__init__(TicTacToe.SquareBoard(board_size), [white, black])
@@ -66,15 +71,38 @@ class TicTacToe(Game):
 
 def main_start_game() -> TicTacToe:
     tic_tac_toe = TicTacToe.start_game(3)
-    print(f'{tic_tac_toe.board}')
+    # print(f'{tic_tac_toe.board}')
     tic_tac_toe.place_piece('white', 'x', 1, 2)
     tic_tac_toe.place_piece('black', 'o', 0, 0)
-    print(f'{tic_tac_toe.board}')
-    # tic_tac_toe.place_piece('white', 'x', 0, 0)
-    print(f'{tic_tac_toe.board.matrix=}')
+    # print(f'{tic_tac_toe.board}')
+    # print(f'{tic_tac_toe.board.matrix=}')
 
     return tic_tac_toe
 
 
-if __name__ == '__main__':
-    main_start_game()
+class DiffCollector(Collector):
+    def _diff(self, aggregation, expected_result):
+        return expected_result - aggregation
+
+
+class ProcessMock:
+    """
+    Mock the Process class to execute the target function in the current process so that class attributes can be share
+    """
+
+    def __init__(self, target, args, daemon):
+        self.target = target
+        self.args = args
+        self.daemon = daemon
+
+    def start(self):
+        pass
+
+    def join(self):
+        return self.target(*self.args)
+
+
+def main_process_with_factory():
+    process = ProcessMock(target=DiffCollector.collector_factory, args=((3, 4), sum, 5), daemon=True)
+    process.start()
+    return process.join()

@@ -22,21 +22,21 @@ def _get_file_suffix(exporter_class) -> str:
     return suffix
 
 
-def integration_test(
+def diagram_integration_test(
     expected_exported_contents_path: Path,
-    expected_result: Any,
     function_to_trace: Callable,
     function_args: tuple,
     function_kwargs: dict,
     exporter_class: Type[Exporter],
     *presets: Preset,
     overwrite_expected_contents: bool = False,
-):
+) -> Any:
     """
     Utility function to write an integration test comparing the tracing of a function call and the expected diagram contents:
     - expected_exported_contents_path: the file containing the expected diagram contents
     - overwrite_expected_contents: set to True temporarily to update the contents of expected_exported_contents_path.
-      But you should commit calls only with overwrite_expected_contents is False
+      But you should commit calls only with overwrite_expected_contents set to False
+    It returns the outcome of the traced execution for further testing.
     """
     exported_io = StringIO()
     exporter = exporter_class(exported_io)
@@ -44,10 +44,10 @@ def integration_test(
     function_args = function_args or ()
     function_kwargs = function_kwargs or {}
     try:
-        result = ExecutionTracer(exporter, call_filter_factory(presets)).runfunc(
+        return ExecutionTracer(exporter, call_filter_factory(presets)).runfunc(
             function_to_trace, *function_args, **function_kwargs
         )
-        assert result == expected_result
+
     except Exception as exception:
         raise exception
     finally:
