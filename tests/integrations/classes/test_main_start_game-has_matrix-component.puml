@@ -1,6 +1,8 @@
 @startuml tests.modules.classes.complexclasses.main_start_game-component
 skinparam BoxPadding 10
 skinparam componentStyle rectangle
+set separator .
+!pragma useIntermediatePackages false
 
 package tests.modules.classes {
   frame complexclasses {

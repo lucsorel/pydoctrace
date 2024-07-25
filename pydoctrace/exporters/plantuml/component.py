@@ -23,6 +23,8 @@ PLANTUML_COMPONENT_FORMATTER: Formatter = formatter_factory('PlantUMLComponentFo
 HEADER_TPL = r"""@startuml {diagram_name}
 skinparam BoxPadding 10
 skinparam componentStyle rectangle
+set separator .
+!pragma useIntermediatePackages false
 
 """
 
@@ -64,14 +66,15 @@ class ModuleStructureVisitor:
         """
         has_functions = len(module.functions) > 0
 
-        # groups the module name with the parent ones if the module contains no function and only one sub-module
-        if not has_functions and len(module.sub_modules) == 1:
-            sub_module = list(module.sub_modules.values())[0]
+        # groups the module name with the parent ones if the module contains no function
+        if not has_functions:
+            for sub_module in module.sub_modules.values():
+                # skips the wrapping module if it has no name (root module)
+                sub_module_parent_path = (
+                    parent_module_path if module.name is None else parent_module_path + (module.name,)
+                )
 
-            # skips the wrapping module if it has no name (root module)
-            sub_module_parent_path = parent_module_path if module.name is None else parent_module_path + (module.name,)
-
-            yield from self.visit_module(sub_module, sub_module_parent_path, indentation_level)
+                yield from self.visit_module(sub_module, sub_module_parent_path, indentation_level)
 
         # writes the parent packages if any,
         # then revisits the current module (without parents, with an increased indentation level)
@@ -94,17 +97,11 @@ class ModuleStructureVisitor:
             indentation = indentation_level * INDENT
 
             # opens the component
-            # - special case when the root module contains more than one module: hide its contours (PlantUML rectangle)
             package_styling = ''
-            if indentation_level == 0:
-                package_type = 'rectangle'
-                package_styling = ' #line:transparent;text:transparent'
             # - the component is a module if it has functions -> use a PlantUML frame representation
-            elif has_functions:
-                package_type = 'frame'
             # - the component is a package if it has no function -> use a PlantUML package representation
-            else:
-                package_type = 'package'
+            package_type = 'frame' if has_functions else 'package'
+            # TODO use a cloud package to wrap the components having a <locals> context?
 
             yield self.fmt.format(
                 STYLED_PACKAGE_OPEN_TPL,
@@ -120,7 +117,7 @@ class ModuleStructureVisitor:
 
             # visits the sub-modules
             if len(module.sub_modules) > 0:
-                sub_indentation_level = indentation_level + 1
+                sub_indentation_level = (indentation_level + 1) if has_functions else indentation_level
                 for sub_module in module.sub_modules.values():
                     yield from self.visit_module(sub_module, (), sub_indentation_level)
 

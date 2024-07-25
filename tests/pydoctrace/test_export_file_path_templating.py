@@ -94,7 +94,7 @@ class CompareAndDelete:
         after_filename = Exporter._template_dynamic_tags(template_file_name, after)
         assert (
             before_filename <= output_contents_path.name <= after_filename
-        ), 'the ${datetime_millis} tag must be framed'
+        ), 'the ${datetime_millis} tag moment must be framed between the start and the end of the unit test'
 
         # compares the contents
         expected_contents_path = self.comparison.comparison_folder_path / self.comparison.expected_contents_filename

@@ -1,6 +1,8 @@
 @startuml tests.modules.classes.basicclass.main_basic_class-component
 skinparam BoxPadding 10
 skinparam componentStyle rectangle
+set separator .
+!pragma useIntermediatePackages false
 
 package tests.modules.classes {
   frame basicclass {

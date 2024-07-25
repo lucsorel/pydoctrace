@@ -1,6 +1,8 @@
 @startuml tests.modules.factorial.factorial_recursive_check_handled-component
 skinparam BoxPadding 10
 skinparam componentStyle rectangle
+set separator .
+!pragma useIntermediatePackages false
 
 package tests.modules {
   frame factorial {

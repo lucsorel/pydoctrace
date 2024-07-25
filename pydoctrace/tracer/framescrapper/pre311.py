@@ -1,10 +1,6 @@
 from inspect import getmembers, isclass
-from re import Pattern
-from re import compile as re_compile
 from types import FrameType
 from typing import Iterator, Tuple
-
-REMOVE_LOCALS_PATTERN: Pattern = re_compile(r'<locals>\.')
 
 
 class FrameScrapperPrePy311:
@@ -70,13 +66,14 @@ class FrameScrapperPrePy311:
                 # scope = 'locals' if in_locals else 'globals'
                 # print(_, member.__module__, member.__qualname__, owner_module, owner_qname, scope, sep=';')
                 # # print(f'{_=}', f'{member.__module__=}', f'{member.__qualname__=}', f'{owner_class=}', f'{owner_module=}', f'{owner_qname=}', f'{scope=}')
-                delocalized_method_qualname = REMOVE_LOCALS_PATTERN.sub('', member.__qualname__)
-                if delocalized_method_qualname.startswith('__create_fn__.'):
-                    yield self._dataclass_fq_method(member.__module__, delocalized_method_qualname, owner)
+
+                method_qualname = member.__qualname__
+                if method_qualname.startswith('__create_fn__.<locals>'):
+                    yield self._dataclass_fq_method(member.__module__, method_qualname, owner)
                 elif self._is_a_named_tuple(owner):
-                    yield self._namedtuple_fq_method(member.__module__, delocalized_method_qualname)
+                    yield self._namedtuple_fq_method(member.__module__, method_qualname)
                 else:
-                    yield f'{member.__module__}.{delocalized_method_qualname}'
+                    yield f'{member.__module__}.{method_qualname}'
 
             # avoid infinite loops when the member is not part of a module
             if getattr(member, '__module__', None) is not None:

@@ -1,29 +1,29 @@
 @startuml tests.modules.classes.dataclass.main_dataclass-component
 skinparam BoxPadding 10
 skinparam componentStyle rectangle
+set separator .
+!pragma useIntermediatePackages false
 
-rectangle None #line:transparent;text:transparent {
-  package tests.modules.classes {
-    frame dataclass {
-      [tests.modules.classes.dataclass.main_dataclass] as "main_dataclass" << @trace_to_component_puml >>
-      [tests.modules.classes.dataclass.create_person] as "create_person"
-      frame Person {
-        [tests.modules.classes.dataclass.Person.~__init~__] as "~__init~__"
-        [tests.modules.classes.dataclass.Person.~__hash~__] as "~__hash~__"
-        [tests.modules.classes.dataclass.Person.~__repr~__] as "~__repr~__"
-        [tests.modules.classes.dataclass.Person.~__eq~__] as "~__eq~__"
-        [tests.modules.classes.dataclass.Person.full_name] as "full_name"
-      }
+package tests.modules.classes {
+  frame dataclass {
+    [tests.modules.classes.dataclass.main_dataclass] as "main_dataclass" << @trace_to_component_puml >>
+    [tests.modules.classes.dataclass.create_person] as "create_person"
+    frame Person {
+      [tests.modules.classes.dataclass.Person.~__init~__] as "~__init~__"
+      [tests.modules.classes.dataclass.Person.~__hash~__] as "~__hash~__"
+      [tests.modules.classes.dataclass.Person.~__repr~__] as "~__repr~__"
+      [tests.modules.classes.dataclass.Person.~__eq~__] as "~__eq~__"
+      [tests.modules.classes.dataclass.Person.full_name] as "full_name"
     }
   }
-  frame builtins {
-    [builtins.~__repr~__] as "~__repr~__"
-  }
-  frame codecs {
-    [codecs.reset] as "reset"
-    frame IncrementalDecoder {
-      [codecs.IncrementalDecoder.reset] as "reset"
-    }
+}
+frame builtins {
+  [builtins.~__repr~__] as "~__repr~__"
+}
+frame codecs {
+  [codecs.reset] as "reset"
+  frame IncrementalDecoder {
+    [codecs.IncrementalDecoder.reset] as "reset"
   }
 }
 [tests.modules.classes.dataclass.main_dataclass] --> [tests.modules.classes.dataclass.create_person] : 1

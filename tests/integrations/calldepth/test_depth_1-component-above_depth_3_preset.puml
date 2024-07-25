@@ -1,6 +1,8 @@
 @startuml tests.integrations.calldepth.depth_1-component
 skinparam BoxPadding 10
 skinparam componentStyle rectangle
+set separator .
+!pragma useIntermediatePackages false
 
 package tests.integrations {
   frame calldepth {

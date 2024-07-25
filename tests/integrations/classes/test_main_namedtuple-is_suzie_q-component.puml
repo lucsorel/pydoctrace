@@ -1,29 +1,29 @@
 @startuml tests.modules.classes.namedtuples.main_namedtuple-component
 skinparam BoxPadding 10
 skinparam componentStyle rectangle
+set separator .
+!pragma useIntermediatePackages false
 
-rectangle None #line:transparent;text:transparent {
-  package tests.modules.classes {
-    frame namedtuples {
-      [tests.modules.classes.namedtuples.main_namedtuple] as "main_namedtuple" << @trace_to_component_puml >>
-      [tests.modules.classes.namedtuples.create_person] as "create_person"
-      frame Person {
-        [tests.modules.classes.namedtuples.Person.~__new~__] as "~__new~__"
-        [tests.modules.classes.namedtuples.Person.full_name] as "full_name"
-      }
+package tests.modules.classes {
+  frame namedtuples {
+    [tests.modules.classes.namedtuples.main_namedtuple] as "main_namedtuple" << @trace_to_component_puml >>
+    [tests.modules.classes.namedtuples.create_person] as "create_person"
+    frame Person {
+      [tests.modules.classes.namedtuples.Person.~__new~__] as "~__new~__"
+      [tests.modules.classes.namedtuples.Person.full_name] as "full_name"
     }
   }
-  package urllib {
-    frame parse {
-      [urllib.parse.urlsplit] as "urlsplit"
-      [urllib.parse._coerce_args] as "_coerce_args"
-      [urllib.parse._remove_unsafe_bytes_from_url] as "_remove_unsafe_bytes_from_url"
-      [urllib.parse._splitnetloc] as "_splitnetloc"
-      [urllib.parse._checknetloc] as "_checknetloc"
-      [urllib.parse._noop] as "_noop"
-      frame SplitResult {
-        [urllib.parse.SplitResult.~__new~__] as "~__new~__"
-      }
+}
+package urllib {
+  frame parse {
+    [urllib.parse.urlsplit] as "urlsplit"
+    [urllib.parse._coerce_args] as "_coerce_args"
+    [urllib.parse._remove_unsafe_bytes_from_url] as "_remove_unsafe_bytes_from_url"
+    [urllib.parse._splitnetloc] as "_splitnetloc"
+    [urllib.parse._checknetloc] as "_checknetloc"
+    [urllib.parse._noop] as "_noop"
+    frame SplitResult {
+      [urllib.parse.SplitResult.~__new~__] as "~__new~__"
     }
   }
 }
