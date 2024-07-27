@@ -30,7 +30,7 @@ set separator .
 
 """
 
-STYLED_PACKAGE_OPEN_TPL = r"""{indentation}{package_type} {package_name:dunder} {{
+PACKAGE_OPEN_TPL = r"""{indentation}{package_type} {package_name:dunder}{package_alias:dunder} {{
 """
 
 PACKAGE_CLOSE_TPL = r"""{indentation}}}
@@ -86,10 +86,11 @@ class ModuleStructureVisitor:
             indentation = indentation_level * INDENT
 
             yield self.fmt.format(
-                STYLED_PACKAGE_OPEN_TPL,
+                PACKAGE_OPEN_TPL,
                 indentation=indentation,
                 package_type='package',
                 package_name='.'.join(parent_module_path + (module.name,)),
+                package_alias='',
             )
 
             # visits the sub-modules
@@ -106,10 +107,11 @@ class ModuleStructureVisitor:
             indentation = indentation_level * INDENT
 
             yield self.fmt.format(
-                STYLED_PACKAGE_OPEN_TPL,
+                PACKAGE_OPEN_TPL,
                 indentation=indentation,
                 package_type='package',
                 package_name='.'.join(parent_module_path),
+                package_alias='',
             )
 
             yield from self.visit_module(module, (), indentation_level + 1)
@@ -119,13 +121,19 @@ class ModuleStructureVisitor:
         else:
             indentation = indentation_level * INDENT
 
-            # opens the component
-            # TODO use a cloud type to wrap the components having a <locals> context?
+            # opens the component: cloud if it is within the locals of a component, frame otherwise
+            if module.name.endswith('<locals>'):
+                package_type = 'cloud'
+                package_alias = f' as "{module.name[:-8]}.<locals>"'
+            else:
+                package_type = 'frame'
+                package_alias = ''
             yield self.fmt.format(
-                STYLED_PACKAGE_OPEN_TPL,
+                PACKAGE_OPEN_TPL,
                 indentation=indentation,
-                package_type='frame',
+                package_type=package_type,
                 package_name=module.name,
+                package_alias=package_alias,
             )
 
             # declares the functions as components
