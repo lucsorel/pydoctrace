@@ -6,27 +6,27 @@ set separator .
 
 package tests.modules.classes {
   frame namedtuples {
-    [tests.modules.classes.namedtuples.main_namedtuple_disambiguation] as "main_namedtuple_disambiguation" << @trace_to_component_puml >>
-    [tests.modules.classes.namedtuples.update_namedtuple] as "update_namedtuple"
+    [main_namedtuple_disambiguation] << @trace_to_component_puml >>
+    [update_namedtuple]
     frame Person {
-      [tests.modules.classes.namedtuples.Person.~__new~__] as "~__new~__"
+      [~__new~__]
     }
     frame Pet {
-      [tests.modules.classes.namedtuples.Pet.~__new~__] as "~__new~__"
+      [~__new~__]
     }
   }
 }
 package collections {
   frame namedtuple {
-    [collections.namedtuple._replace] as "_replace"
-    [collections.namedtuple._make] as "_make"
-    [collections.namedtuple.~__getnewargs~__] as "~__getnewargs~__"
-    [collections.namedtuple._asdict] as "_asdict"
-    [collections.namedtuple.~__repr~__] as "~__repr~__"
+    [_replace]
+    [_make]
+    [~__getnewargs~__]
+    [_asdict]
+    [~__repr~__]
   }
 }
 frame copyreg {
-  [copyreg._slotnames] as "_slotnames"
+  [_slotnames]
 }
 [tests.modules.classes.namedtuples.main_namedtuple_disambiguation] -> [tests.modules.classes.namedtuples.Person.~__new~__] : 1
 [tests.modules.classes.namedtuples.main_namedtuple_disambiguation] <. [tests.modules.classes.namedtuples.Person.~__new~__] : 2

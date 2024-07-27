@@ -6,12 +6,12 @@ set separator .
 
 package tests.modules {
   frame factorial {
-    [tests.modules.factorial.factorial_with_checker] as "factorial_with_checker" << @trace_to_component_puml >>
+    [factorial_with_checker] << @trace_to_component_puml >>
     frame validator {
-      [tests.modules.factorial.validator.check_or_wrap_error] as "check_or_wrap_error"
-      [tests.modules.factorial.validator.is_positive_int] as "is_positive_int"
-      [tests.modules.factorial.validator.raise_value_error] as "raise_value_error"
-      [tests.modules.factorial.validator.log_factorial_error] as "log_factorial_error"
+      [check_or_wrap_error]
+      [is_positive_int]
+      [raise_value_error]
+      [log_factorial_error]
     }
   }
 }

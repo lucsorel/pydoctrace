@@ -6,10 +6,10 @@ set separator .
 
 package tests.modules {
   frame ecoindex {
-    [tests.modules.ecoindex.ecoindex] as "ecoindex" << @trace_to_component_puml >>
-    [tests.modules.ecoindex.to_quantile_position] as "to_quantile_position"
-    [tests.modules.ecoindex.acknowledge_interpolation] as "acknowledge_interpolation"
-    [tests.modules.ecoindex.validate_ecoindex] as "validate_ecoindex"
+    [ecoindex] << @trace_to_component_puml >>
+    [to_quantile_position]
+    [acknowledge_interpolation]
+    [validate_ecoindex]
   }
 }
 [tests.modules.ecoindex.ecoindex] --> [tests.modules.ecoindex.to_quantile_position] : 1, 5, 9

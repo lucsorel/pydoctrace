@@ -6,10 +6,10 @@ set separator .
 
 package tests.modules {
   frame factorial {
-    [tests.modules.factorial.factorial_recursive_check_handled] as "factorial_recursive_check_handled" << @trace_to_component_puml >>
+    [factorial_recursive_check_handled] << @trace_to_component_puml >>
     frame validator {
-      [tests.modules.factorial.validator.is_positive_int] as "is_positive_int"
-      [tests.modules.factorial.validator.raise_value_error] as "raise_value_error"
+      [is_positive_int]
+      [raise_value_error]
     }
   }
 }

@@ -6,24 +6,24 @@ set separator .
 
 package tests.modules.classes {
   frame complexclasses {
-    [tests.modules.classes.complexclasses.main_start_game] as "main_start_game" << @trace_to_component_puml >>
+    [main_start_game] << @trace_to_component_puml >>
     frame TicTacToe {
-      [tests.modules.classes.complexclasses.TicTacToe.start_game] as "start_game"
-      [tests.modules.classes.complexclasses.TicTacToe.~__init~__] as "~__init~__"
-      [tests.modules.classes.complexclasses.TicTacToe.place_piece] as "place_piece"
+      [start_game]
+      [~__init~__]
+      [place_piece]
       frame SquareBoard {
-        [tests.modules.classes.complexclasses.TicTacToe.SquareBoard.~__init~__] as "~__init~__"
+        [~__init~__]
       }
     }
     frame Game {
-      [tests.modules.classes.complexclasses.Game.~__init~__] as "~__init~__"
+      [~__init~__]
       frame Player {
-        [tests.modules.classes.complexclasses.Game.Player.~__init~__] as "~__init~__"
+        [~__init~__]
       }
       frame Board {
-        [tests.modules.classes.complexclasses.Game.Board.~__init~__] as "~__init~__"
+        [~__init~__]
         frame Piece {
-          [tests.modules.classes.complexclasses.Game.Board.Piece.~__init~__] as "~__init~__"
+          [~__init~__]
         }
       }
     }

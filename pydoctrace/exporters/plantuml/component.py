@@ -36,7 +36,7 @@ PACKAGE_OPEN_TPL = r"""{indentation}{package_type} {package_name:dunder}{package
 PACKAGE_CLOSE_TPL = r"""{indentation}}}
 """
 
-COMPONENT_TPL = r"""{indentation}[{function.fqn:dunder}] as "{function.name:dunder}"{stereotype}
+COMPONENT_TPL = r"""{indentation}[{function.name:dunder}]{stereotype}
 """
 
 UNHANDLED_ERROR_LABEL_TPL = r"""{indentation}label {fq_error_class_name} as " "

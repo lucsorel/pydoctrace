@@ -6,7 +6,7 @@ set separator .
 
 package tests.modules {
   frame factorial {
-    [tests.modules.factorial.factorial_reduce_lambda] as "factorial_reduce_lambda" << @trace_to_component_puml >>
+    [factorial_reduce_lambda] << @trace_to_component_puml >>
   }
 }
 

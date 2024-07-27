@@ -6,22 +6,22 @@ set separator .
 
 package tests.modules.classes {
   frame complexclasses {
-    [tests.modules.classes.complexclasses.main_process_with_factory] as "main_process_with_factory" << @trace_to_component_puml >>
+    [main_process_with_factory] << @trace_to_component_puml >>
     frame ProcessMock {
-      [tests.modules.classes.complexclasses.ProcessMock.~__init~__] as "~__init~__"
-      [tests.modules.classes.complexclasses.ProcessMock.start] as "start"
-      [tests.modules.classes.complexclasses.ProcessMock.join] as "join"
+      [~__init~__]
+      [start]
+      [join]
     }
     frame DiffCollector {
-      [tests.modules.classes.complexclasses.DiffCollector._diff] as "_diff"
+      [_diff]
     }
   }
   package collector {
     frame Collector {
-      [tests.modules.classes.collector.Collector.collector_factory] as "collector_factory"
-      [tests.modules.classes.collector.Collector.~__init~__] as "~__init~__"
-      [tests.modules.classes.collector.Collector.collect] as "collect"
-      [tests.modules.classes.collector.Collector._aggregate] as "_aggregate"
+      [collector_factory]
+      [~__init~__]
+      [collect]
+      [_aggregate]
     }
   }
 }

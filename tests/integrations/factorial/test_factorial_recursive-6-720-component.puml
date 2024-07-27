@@ -6,7 +6,7 @@ set separator .
 
 package tests.modules {
   frame factorial {
-    [tests.modules.factorial.factorial_recursive] as "factorial_recursive" << @trace_to_component_puml >>
+    [factorial_recursive] << @trace_to_component_puml >>
   }
 }
 [tests.modules.factorial.factorial_recursive] -> [tests.modules.factorial.factorial_recursive] : 1, 2, 3, 4, 5

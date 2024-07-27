@@ -6,7 +6,7 @@ set separator .
 
 package tests.modules {
   frame fibonacci {
-    [tests.modules.fibonacci.fibonacci] as "fibonacci" << @trace_to_component_puml >>
+    [fibonacci] << @trace_to_component_puml >>
   }
 }
 [tests.modules.fibonacci.fibonacci] -> [tests.modules.fibonacci.fibonacci] : 1, 2, 3 ... 11, 12, 14

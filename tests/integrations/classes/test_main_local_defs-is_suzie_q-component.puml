@@ -6,22 +6,22 @@ set separator .
 
 package tests.modules.classes {
   frame local_defs {
-    [tests.modules.classes.local_defs.main_local_defs] as "main_local_defs" << @trace_to_component_puml >>
-    [tests.modules.classes.local_defs.get_adder] as "get_adder"
+    [main_local_defs] << @trace_to_component_puml >>
+    [get_adder]
     frame Factory {
-      [tests.modules.classes.local_defs.Factory.create_class] as "create_class"
+      [create_class]
       cloud create_class<locals> as "create_class.<locals>" {
-        [tests.modules.classes.local_defs.Factory.create_class<locals>.constructor] as "constructor"
+        [constructor]
       }
     }
     cloud get_adder<locals> as "get_adder.<locals>" {
-      [tests.modules.classes.local_defs.get_adder<locals>.local_add_function] as "local_add_function"
+      [local_add_function]
     }
     frame FullnameCombiner {
-      [tests.modules.classes.local_defs.FullnameCombiner.~__init~__] as "~__init~__"
-      [tests.modules.classes.local_defs.FullnameCombiner.names_combiner_factory] as "names_combiner_factory"
+      [~__init~__]
+      [names_combiner_factory]
       cloud names_combiner_factory<locals> as "names_combiner_factory.<locals>" {
-        [tests.modules.classes.local_defs.FullnameCombiner.names_combiner_factory<locals>.fullname_combiner] as "fullname_combiner"
+        [fullname_combiner]
       }
     }
   }

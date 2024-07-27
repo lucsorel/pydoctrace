@@ -6,12 +6,12 @@ set separator .
 
 package tests.modules.classes {
   frame basicclass {
-    [tests.modules.classes.basicclass.main_basic_class] as "main_basic_class" << @trace_to_component_puml >>
-    [tests.modules.classes.basicclass.create_person] as "create_person"
+    [main_basic_class] << @trace_to_component_puml >>
+    [create_person]
     frame Person {
-      [tests.modules.classes.basicclass.Person.factory] as "factory"
-      [tests.modules.classes.basicclass.Person.~__init~__] as "~__init~__"
-      [tests.modules.classes.basicclass.Person.full_name] as "full_name"
+      [factory]
+      [~__init~__]
+      [full_name]
     }
   }
 }

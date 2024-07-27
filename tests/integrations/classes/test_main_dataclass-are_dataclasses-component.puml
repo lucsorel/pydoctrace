@@ -6,24 +6,24 @@ set separator .
 
 package tests.modules.classes {
   frame dataclass {
-    [tests.modules.classes.dataclass.main_dataclass] as "main_dataclass" << @trace_to_component_puml >>
-    [tests.modules.classes.dataclass.create_person] as "create_person"
+    [main_dataclass] << @trace_to_component_puml >>
+    [create_person]
     frame Person {
-      [tests.modules.classes.dataclass.Person.~__init~__] as "~__init~__"
-      [tests.modules.classes.dataclass.Person.~__hash~__] as "~__hash~__"
-      [tests.modules.classes.dataclass.Person.~__repr~__] as "~__repr~__"
-      [tests.modules.classes.dataclass.Person.~__eq~__] as "~__eq~__"
-      [tests.modules.classes.dataclass.Person.full_name] as "full_name"
+      [~__init~__]
+      [~__hash~__]
+      [~__repr~__]
+      [~__eq~__]
+      [full_name]
     }
   }
 }
 frame builtins {
-  [builtins.~__repr~__] as "~__repr~__"
+  [~__repr~__]
 }
 frame codecs {
-  [codecs.reset] as "reset"
+  [reset]
   frame IncrementalDecoder {
-    [codecs.IncrementalDecoder.reset] as "reset"
+    [reset]
   }
 }
 [tests.modules.classes.dataclass.main_dataclass] --> [tests.modules.classes.dataclass.create_person] : 1

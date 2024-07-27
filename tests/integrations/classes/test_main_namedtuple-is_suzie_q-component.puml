@@ -6,24 +6,24 @@ set separator .
 
 package tests.modules.classes {
   frame namedtuples {
-    [tests.modules.classes.namedtuples.main_namedtuple] as "main_namedtuple" << @trace_to_component_puml >>
-    [tests.modules.classes.namedtuples.create_person] as "create_person"
+    [main_namedtuple] << @trace_to_component_puml >>
+    [create_person]
     frame Person {
-      [tests.modules.classes.namedtuples.Person.~__new~__] as "~__new~__"
-      [tests.modules.classes.namedtuples.Person.full_name] as "full_name"
+      [~__new~__]
+      [full_name]
     }
   }
 }
 package urllib {
   frame parse {
-    [urllib.parse.urlsplit] as "urlsplit"
-    [urllib.parse._coerce_args] as "_coerce_args"
-    [urllib.parse._remove_unsafe_bytes_from_url] as "_remove_unsafe_bytes_from_url"
-    [urllib.parse._splitnetloc] as "_splitnetloc"
-    [urllib.parse._checknetloc] as "_checknetloc"
-    [urllib.parse._noop] as "_noop"
+    [urlsplit]
+    [_coerce_args]
+    [_remove_unsafe_bytes_from_url]
+    [_splitnetloc]
+    [_checknetloc]
+    [_noop]
     frame SplitResult {
-      [urllib.parse.SplitResult.~__new~__] as "~__new~__"
+      [~__new~__]
     }
   }
 }

@@ -6,9 +6,9 @@ set separator .
 
 package tests.modules {
   frame factorial {
-    [tests.modules.factorial.factorial_reduce_multiply] as "factorial_reduce_multiply" << @trace_to_component_puml >>
+    [factorial_reduce_multiply] << @trace_to_component_puml >>
     cloud factorial_reduce_multiply<locals> as "factorial_reduce_multiply.<locals>" {
-      [tests.modules.factorial.factorial_reduce_multiply<locals>.multiply] as "multiply"
+      [multiply]
     }
   }
 }

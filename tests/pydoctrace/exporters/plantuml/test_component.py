@@ -218,7 +218,7 @@ def test_plantuml_component_exporter_build_components_structure(
             0,
             [
                 'frame ~__main~__ {\n',
-                '  [~__main~__.main] as "main" << @trace_to_component_puml >>\n',
+                '  [main] << @trace_to_component_puml >>\n',
                 '}\n',
             ],
         ),
@@ -244,8 +244,8 @@ def test_plantuml_component_exporter_build_components_structure(
             0,
             [
                 'frame ~__main~__ {\n',
-                '  [~__main~__.main] as "main" << @trace_to_component_puml >>\n',
-                '  [~__main~__.trace] as "trace"\n',
+                '  [main] << @trace_to_component_puml >>\n',
+                '  [trace]\n',
                 '}\n',
             ],
         ),
@@ -277,10 +277,10 @@ def test_plantuml_component_exporter_build_components_structure(
             0,
             [
                 'frame ~__main~__ {\n',
-                '  [~__main~__.main] as "main" << @trace_to_component_puml >>\n',
+                '  [main] << @trace_to_component_puml >>\n',
                 '}\n',
                 'frame pydoctrace {\n',
-                '  [pydoctrace.trace] as "trace"\n',
+                '  [trace]\n',
                 '}\n',
             ],
         ),
@@ -304,7 +304,7 @@ def test_plantuml_component_exporter_build_components_structure(
             [
                 'package pydoctrace {\n',
                 '  frame tracer {\n',
-                '    [pydoctrace.tracer.trace] as "trace" << @trace_to_component_puml >>\n',
+                '    [trace] << @trace_to_component_puml >>\n',
                 '  }\n',
                 '}\n',
             ],
@@ -339,7 +339,7 @@ def test_plantuml_component_exporter_build_components_structure(
             [
                 'package pydoctrace.tracing {\n',
                 '  frame tracer {\n',
-                '    [pydoctrace.tracing.tracer.trace] as "trace"\n',
+                '    [trace]\n',
                 '  }\n',
                 '}\n',
             ],
@@ -374,11 +374,11 @@ def test_plantuml_component_exporter_build_components_structure(
             [
                 'frame math {\n',
                 '  label math.ValueError as " "\n',
-                '  [math.factorial] as "factorial" << @trace_to_component_puml >>\n',
+                '  [factorial] << @trace_to_component_puml >>\n',
                 '}\n',
                 'frame validation {\n',
-                '  [validation.is_positive_int] as "is_positive_int"\n',
-                '  [validation.raise_value_error] as "raise_value_error"\n',
+                '  [is_positive_int]\n',
+                '  [raise_value_error]\n',
                 '}\n',
             ],
         ),
@@ -412,7 +412,7 @@ def test_module_structure_visitor_visit_module(
             ],
             0,
             [
-                '[tests.tracer.do_thing] as "do_thing" << @trace_to_component_puml >>\n',
+                '[do_thing] << @trace_to_component_puml >>\n',
             ],
         ),
         (
@@ -422,7 +422,7 @@ def test_module_structure_visitor_visit_module(
             ],
             1,
             [
-                '  [tests.tracer.do_thing] as "do_thing" << @trace_to_component_puml >>\n',
+                '  [do_thing] << @trace_to_component_puml >>\n',
             ],
         ),
         (
@@ -432,7 +432,7 @@ def test_module_structure_visitor_visit_module(
             ],
             0,
             [
-                '[tests.tracer.do_something_else] as "do_something_else"\n',
+                '[do_something_else]\n',
             ],
         ),
         (
@@ -443,8 +443,8 @@ def test_module_structure_visitor_visit_module(
             ],
             0,
             [
-                '[tests.tracer.do_thing] as "do_thing" << @trace_to_component_puml >>\n',
-                '[tests.tracer.do_something_else] as "do_something_else"\n',
+                '[do_thing] << @trace_to_component_puml >>\n',
+                '[do_something_else]\n',
             ],
         ),
     ],
