@@ -20,6 +20,8 @@ from pydoctrace.exporters.plantuml import FOOTER_TPL
 
 PLANTUML_COMPONENT_FORMATTER: Formatter = formatter_factory('PlantUMLComponentFormatter', escape_dunder_with_tilde)
 
+# 'set separator .' avoids merging namespace parts having the same name but with different fully-qualified names
+# '!pragma useIntermediatePackages false' tells the PlantUML renderer to merge namespace parts when possible
 HEADER_TPL = r"""@startuml {diagram_name}
 skinparam BoxPadding 10
 skinparam componentStyle rectangle
@@ -28,7 +30,7 @@ set separator .
 
 """
 
-STYLED_PACKAGE_OPEN_TPL = r"""{indentation}{package_type} {package_name:dunder}{package_styling} {{
+STYLED_PACKAGE_OPEN_TPL = r"""{indentation}{package_type} {package_name:dunder} {{
 """
 
 PACKAGE_CLOSE_TPL = r"""{indentation}}}
@@ -62,21 +64,43 @@ class ModuleStructureVisitor:
 
     def visit_module(self, module: Module, parent_module_path: Tuple[str], indentation_level: int) -> Iterable[str]:
         """
-        Yields the PlantUML code dedicated to package or modules hierarchy.
+        Yields the PlantUML code dedicated to the given module and its parent modules hierarchy.
         """
-        has_functions = len(module.functions) > 0
 
-        # groups the module name with the parent ones if the module contains no function
-        if not has_functions:
+        has_functions = len(module.functions) > 0
+        sub_modules_nb = len(module.sub_modules)
+        # special case of the root module
+        if module.name is None:
+            for sub_module in module.sub_modules.values():
+                yield from self.visit_module(sub_module, parent_module_path, indentation_level)
+
+        # chains the parent packages having only one submodule and no function
+        elif not has_functions and sub_modules_nb == 1:
+            sub_module_parent_path = parent_module_path if module.name is None else parent_module_path + (module.name,)
+            yield from self.visit_module(
+                list(module.sub_modules.values())[0], sub_module_parent_path, indentation_level
+            )
+
+        # writes the package (has no function) namespace having more than one sub-modules
+        elif not has_functions:
+            indentation = indentation_level * INDENT
+
+            yield self.fmt.format(
+                STYLED_PACKAGE_OPEN_TPL,
+                indentation=indentation,
+                package_type='package',
+                package_name='.'.join(parent_module_path + (module.name,)),
+            )
+
+            # visits the sub-modules
+            child_indentation_level = indentation_level + 1
             for sub_module in module.sub_modules.values():
                 # skips the wrapping module if it has no name (root module)
-                sub_module_parent_path = (
-                    parent_module_path if module.name is None else parent_module_path + (module.name,)
-                )
+                yield from self.visit_module(sub_module, (), child_indentation_level)
 
-                yield from self.visit_module(sub_module, sub_module_parent_path, indentation_level)
+            yield self.fmt.format(PACKAGE_CLOSE_TPL, indentation=indentation)
 
-        # writes the parent packages if any,
+        # writes the parent packages of the module having functions
         # then revisits the current module (without parents, with an increased indentation level)
         elif len(parent_module_path) > 0:
             indentation = indentation_level * INDENT
@@ -86,7 +110,6 @@ class ModuleStructureVisitor:
                 indentation=indentation,
                 package_type='package',
                 package_name='.'.join(parent_module_path),
-                package_styling='',
             )
 
             yield from self.visit_module(module, (), indentation_level + 1)
@@ -97,18 +120,12 @@ class ModuleStructureVisitor:
             indentation = indentation_level * INDENT
 
             # opens the component
-            package_styling = ''
-            # - the component is a module if it has functions -> use a PlantUML frame representation
-            # - the component is a package if it has no function -> use a PlantUML package representation
-            package_type = 'frame' if has_functions else 'package'
-            # TODO use a cloud package to wrap the components having a <locals> context?
-
+            # TODO use a cloud type to wrap the components having a <locals> context?
             yield self.fmt.format(
                 STYLED_PACKAGE_OPEN_TPL,
                 indentation=indentation,
-                package_type=package_type,
+                package_type='frame',
                 package_name=module.name,
-                package_styling=package_styling,
             )
 
             # declares the functions as components
