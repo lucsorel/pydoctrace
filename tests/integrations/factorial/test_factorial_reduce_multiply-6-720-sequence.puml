@@ -8,7 +8,7 @@ hide footbox
 [o-> "tests.modules.factorial\nfactorial_reduce_multiply"
 note right: line 38
 
-"tests.modules.factorial\nfactorial_reduce_multiply" -> "tests.modules.factorial.factorial_reduce_multiply.<locals>\nmultiply" ++
+"tests.modules.factorial\nfactorial_reduce_multiply" -> "tests.modules.factorial.factorial_reduce_multiply<locals>\nmultiply" ++
 note left: line 45
 note right: line 42
 
@@ -16,7 +16,7 @@ return 1
 note right: line 43
 |||
 
-"tests.modules.factorial\nfactorial_reduce_multiply" -> "tests.modules.factorial.factorial_reduce_multiply.<locals>\nmultiply" ++
+"tests.modules.factorial\nfactorial_reduce_multiply" -> "tests.modules.factorial.factorial_reduce_multiply<locals>\nmultiply" ++
 note left: line 45
 note right: line 42
 
@@ -24,7 +24,7 @@ return 2
 note right: line 43
 |||
 
-"tests.modules.factorial\nfactorial_reduce_multiply" -> "tests.modules.factorial.factorial_reduce_multiply.<locals>\nmultiply" ++
+"tests.modules.factorial\nfactorial_reduce_multiply" -> "tests.modules.factorial.factorial_reduce_multiply<locals>\nmultiply" ++
 note left: line 45
 note right: line 42
 
@@ -32,7 +32,7 @@ return 6
 note right: line 43
 |||
 
-"tests.modules.factorial\nfactorial_reduce_multiply" -> "tests.modules.factorial.factorial_reduce_multiply.<locals>\nmultiply" ++
+"tests.modules.factorial\nfactorial_reduce_multiply" -> "tests.modules.factorial.factorial_reduce_multiply<locals>\nmultiply" ++
 note left: line 45
 note right: line 42
 
@@ -40,7 +40,7 @@ return 24
 note right: line 43
 |||
 
-"tests.modules.factorial\nfactorial_reduce_multiply" -> "tests.modules.factorial.factorial_reduce_multiply.<locals>\nmultiply" ++
+"tests.modules.factorial\nfactorial_reduce_multiply" -> "tests.modules.factorial.factorial_reduce_multiply<locals>\nmultiply" ++
 note left: line 45
 note right: line 42
 
@@ -48,7 +48,7 @@ return 120
 note right: line 43
 |||
 
-"tests.modules.factorial\nfactorial_reduce_multiply" -> "tests.modules.factorial.factorial_reduce_multiply.<locals>\nmultiply" ++
+"tests.modules.factorial\nfactorial_reduce_multiply" -> "tests.modules.factorial.factorial_reduce_multiply<locals>\nmultiply" ++
 note left: line 45
 note right: line 42
 

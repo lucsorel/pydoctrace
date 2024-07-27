@@ -1,6 +1,10 @@
 from inspect import getmembers, isclass
+from re import Match, Pattern
+from re import compile as re_compile
 from types import FrameType
 from typing import Iterator, Tuple
+
+COMPONENT_LOCALS_PATTERN: Pattern = re_compile(r'([^\.]+)\.<locals>')
 
 
 class FrameScrapperPrePy311:
@@ -53,6 +57,12 @@ class FrameScrapperPrePy311:
         else:
             return f'{method_module}.{delocalized_method_qualname}'
 
+    def _create_components_for_locals(self, function_qualified_name: str) -> str:
+        def replacer(match: Match) -> str:
+            return f'{match.group(1)}<locals>'
+
+        return COMPONENT_LOCALS_PATTERN.sub(replacer, function_qualified_name)
+
     def _iter_over_type_namespaces(
         self, owner: object, owner_members: dict, function_code, *, parsed_types: set, in_locals: bool = True
     ) -> Iterator[str]:
@@ -67,8 +77,8 @@ class FrameScrapperPrePy311:
                 # print(_, member.__module__, member.__qualname__, owner_module, owner_qname, scope, sep=';')
                 # # print(f'{_=}', f'{member.__module__=}', f'{member.__qualname__=}', f'{owner_class=}', f'{owner_module=}', f'{owner_qname=}', f'{scope=}')
 
-                method_qualname = member.__qualname__
-                if method_qualname.startswith('__create_fn__.<locals>'):
+                method_qualname = self._create_components_for_locals(member.__qualname__)
+                if method_qualname.startswith('__create_fn__<locals>'):
                     yield self._dataclass_fq_method(member.__module__, method_qualname, owner)
                 elif self._is_a_named_tuple(owner):
                     yield self._namedtuple_fq_method(member.__module__, method_qualname)
