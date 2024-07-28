@@ -13,6 +13,10 @@ class FrameScrapperPrePy311:
     a called block of code.
     """
 
+    def _parsed_entry_key(self, entry: object):
+        entry_class = entry if isclass(entry) else entry.__class__
+        return entry_class, id(entry)
+
     def _not_yet_parsed_entries_iter(self, namespace: dict, *, parsed_types: set) -> Iterator[Tuple[str, object]]:
         for entry_name, entry in namespace.items():
             if entry is not None:
@@ -22,11 +26,7 @@ class FrameScrapperPrePy311:
                     parsed_types.add(parsed_entry_key)
                     yield entry_name, entry
 
-    def _parsed_entry_key(self, entry: object):
-        entry_class = entry if isclass(entry) else entry.__class__
-        return entry_class, id(entry)
-
-    def _get_owner_class_metadata(self, owner) -> Tuple[str, str]:
+    def _get_owner_class_metadata(self, owner: object) -> Tuple[str, str]:
         if owner is None:
             return None, None
         else:
@@ -43,12 +43,12 @@ class FrameScrapperPrePy311:
         else:
             return f'{owner_module}.{method_name}'
 
-    def _is_a_named_tuple(self, owner: object):
-        if owner is None:
+    def _is_a_named_tuple(self, entry: object):
+        if entry is None:
             return False
 
-        owner_class = owner if isclass(owner) else owner.__class__
-        return issubclass(owner_class, tuple) and hasattr(owner_class, '_asdict') and hasattr(owner_class, '_fields')
+        entry_class = entry if isclass(entry) else entry.__class__
+        return issubclass(entry_class, tuple) and hasattr(entry_class, '_asdict') and hasattr(entry_class, '_fields')
 
     def _namedtuple_fq_method(self, method_module: str, delocalized_method_qualname: str):
         member_name = delocalized_method_qualname.rsplit('.', maxsplit=1)[1]
@@ -57,11 +57,11 @@ class FrameScrapperPrePy311:
         else:
             return f'{method_module}.{delocalized_method_qualname}'
 
-    def _create_components_for_locals(self, function_qualified_name: str) -> str:
-        def replacer(match: Match) -> str:
+    def _create_components_for_locals(self, function_qualname: str) -> str:
+        def locals_dot_remover(match: Match) -> str:
             return f'{match.group(1)}<locals>'
 
-        return COMPONENT_LOCALS_PATTERN.sub(replacer, function_qualified_name)
+        return COMPONENT_LOCALS_PATTERN.sub(locals_dot_remover, function_qualname)
 
     def _iter_over_type_namespaces(
         self, owner: object, owner_members: dict, function_code, *, parsed_types: set, in_locals: bool = True
