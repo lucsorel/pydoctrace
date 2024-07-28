@@ -263,11 +263,11 @@ poetry run pytest -v --cov=pydoctrace --cov-branch --cov-report term-missing --c
 
 # Changelog
 
-* `0.4.0`: handle module and method names for named tuple
+* `0.4.0`: added support for classes, named tuples, dataclasses, nested classes; better practices applied to the PlantUML components diagrams (thanks to [@arnaudroques](https://github.com/arnaudroques))
 * `0.3.0`: added configurable filters to exclude function calls from the tracing process (do not trace calls to the standard library modules and functions by default), templating for output file names.
 Thank you [Philippe Tony](https://github.com/philippetony) for suggesting filtering out calls above a certain calls depth from the traced function.
 Started integration tests
-* `0.2.0`: PlantUML exporter for component diagrams, added unit tests
+* `0.2.0`: PlantUML exporter for components diagrams, added unit tests
 * `0.1.2`: added Github actions for the automated tests and interaction with pre-commit.ci for the code linting
 * `0.1.1`: [deleted release: wrong contents] added Github actions for the automated tests and interaction with pre-commit.ci for the code linting
 * `0.1.0`: ✨ first release, PlantUML exporter for sequence diagrams; diagram files are saved in the current working directory
