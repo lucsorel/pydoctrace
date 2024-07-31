@@ -1,7 +1,7 @@
 from inspect import getmembers, isclass
 from re import Match, Pattern
 from re import compile as re_compile
-from types import FrameType
+from types import CodeType, FrameType
 from typing import Iterator, Tuple
 
 COMPONENT_LOCALS_PATTERN: Pattern = re_compile(r'([^\.]+)\.<locals>')
@@ -67,7 +67,7 @@ class FrameScrapper:
         self,
         owner: object,
         owner_members: dict,
-        function_code,
+        function_codeobject: CodeType,
         *,
         parsed_types: set,
     ) -> Iterator[str]:
@@ -76,7 +76,7 @@ class FrameScrapper:
         - owner_members is either the globals of a module or the members of a class
         """
         for _, member in self._not_yet_parsed_entries_iter(owner_members, parsed_types=parsed_types):
-            if getattr(member, '__code__', None) == function_code:
+            if getattr(member, '__code__', None) == function_codeobject:
                 # owner_module, owner_qname = self._get_owner_class_metadata(owner)
                 # print(_, member.__module__, member.__qualname__, owner_module, owner_qname, sep=';')
                 # print(f'{_=}', f'{member.__module__=}', f'{member.__qualname__=}', f'{owner_class=}', f'{owner_module=}', f'{owner_qname=}')
@@ -94,7 +94,7 @@ class FrameScrapper:
                 yield from self._iter_over_type_namespaces(
                     member,
                     dict(getmembers(member)),
-                    function_code,
+                    function_codeobject,
                     parsed_types=parsed_types,
                 )
 

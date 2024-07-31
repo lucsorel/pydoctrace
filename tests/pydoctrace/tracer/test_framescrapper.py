@@ -1,5 +1,6 @@
 from collections import namedtuple
 from dataclasses import dataclass
+from inspect import getmembers
 from typing import Callable, NamedTuple, Tuple, Type
 
 from pytest import mark, raises
@@ -172,3 +173,46 @@ def test_framescrapper__not_yet_parsed_entries_iter_with_cache():
     # no more entry to yield
     with raises(StopIteration):
         next(entry_iter)
+
+
+@mark.parametrize(
+    ['owner', 'namespace', 'codeobject', 'expected_fq_method_name'],
+    [
+        # _iter_over_type_namespaces called with the globals/locals dict namespace (no owner)
+        (None, {'Person': Person}, Person.fullname.__code__, 'test_framescrapper.Person.fullname'),
+        (None, {'Person': Person}, Person.__init__.__code__, 'test_framescrapper.Person.__init__'),
+        # called with the members of their owning class
+        (Person, {'fullname': Person.fullname}, Person.fullname.__code__, 'test_framescrapper.Person.fullname'),
+        (Person, dict(getmembers(Person)), Person.fullname.__code__, 'test_framescrapper.Person.fullname'),
+        # namedtuples OldieNamedTuple
+        (
+            None,
+            {'OldieNamedTuple': OldieNamedTuple},
+            OldieNamedTuple._replace.__code__,
+            'collections.namedtuple._replace',
+        ),
+        (
+            None,
+            {'ModernNamedTuple': ModernNamedTuple},
+            ModernNamedTuple.has_value.__code__,
+            'test_framescrapper.ModernNamedTuple.has_value',
+        ),
+        (
+            None,
+            {'ModernNamedTuple': ModernNamedTuple},
+            ModernNamedTuple.has_value.__code__,
+            'test_framescrapper.ModernNamedTuple.has_value',
+        ),
+        # classes
+        (
+            None,
+            {'ContactManager': ContactManager},
+            ContactManager.InnerContact.__init__.__code__,
+            'test_framescrapper.ContactManager.InnerContact.__init__',
+        ),
+    ],
+)
+def test_framescrapper__iter_over_type_namespaces(owner, namespace, codeobject, expected_fq_method_name):
+    frame_scrapper = FrameScrapper()
+    fullqualname_iter = frame_scrapper._iter_over_type_namespaces(owner, namespace, codeobject, parsed_types=set())
+    assert next(fullqualname_iter, None) == expected_fq_method_name
