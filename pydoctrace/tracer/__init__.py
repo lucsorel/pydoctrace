@@ -32,6 +32,10 @@ class TracedError(NamedTuple):
     line_index: int
 
 
+# dynamic function-expressions that are not displayed as such in the diagram to reduce the noise
+SKIPPED_INLINE_BLOCKS = {'<lambda>', '<listcomp>', '<dictcomp>', '<setcomp>', '<genexpr>'}
+
+
 class ExecutionTracer:
     """
     Traces the execution of a callable object and pushes events to the given exporter.
@@ -101,7 +105,7 @@ class ExecutionTracer:
             # self.exporter.on_raw_content(f"\n' {frame.f_code.co_name=}\n")
 
             # skips the tracing for inline code blocks
-            if frame.f_code.co_name in {'<lambda>', '<listcomp>', '<dictcomp>', '<setcomp>', '<genexpr>'}:
+            if frame.f_code.co_name in SKIPPED_INLINE_BLOCKS:
                 return self.globaltrace
 
             callable_domain_path, callable_name = self.frame_scrapper.scrap_callable_domain_and_name(frame).rsplit(
