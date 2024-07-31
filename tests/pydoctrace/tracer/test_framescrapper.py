@@ -4,35 +4,33 @@ from typing import Callable, NamedTuple, Tuple, Type
 
 from pytest import mark, raises
 
-from pydoctrace.tracer.framescrapper.pre311 import FrameScrapperPrePy311
+from pydoctrace.tracer.framescrapper import FrameScrapper
 
 
 @mark.parametrize(
     ['entry', 'expected_metadata_with_fake_id'],
     [
-        (FrameScrapperPrePy311(), (FrameScrapperPrePy311, 21)),
-        (FrameScrapperPrePy311, (FrameScrapperPrePy311, 4)),
+        (FrameScrapper(), (FrameScrapper, 13)),
+        (FrameScrapper, (FrameScrapper, 4)),
     ],
 )
-def test_framescrapperpre311__parsed_entry_key(
-    monkeypatch, entry: object, expected_metadata_with_fake_id: Tuple[Type, int]
-):
+def test_framescrapper__parsed_entry_key(monkeypatch, entry: object, expected_metadata_with_fake_id: Tuple[Type, int]):
     monkeypatch.setattr('builtins.id', lambda value: len(value.__class__.__qualname__))
-    assert FrameScrapperPrePy311()._parsed_entry_key(entry) == expected_metadata_with_fake_id
+    assert FrameScrapper()._parsed_entry_key(entry) == expected_metadata_with_fake_id
 
 
 @mark.parametrize(
     ['owner', 'expected_class_metadata'],
     [
         (None, (None, None)),
-        (FrameScrapperPrePy311, ('pydoctrace.tracer.framescrapper.pre311', 'FrameScrapperPrePy311')),
-        (FrameScrapperPrePy311(), ('pydoctrace.tracer.framescrapper.pre311', 'FrameScrapperPrePy311')),
+        (FrameScrapper, ('pydoctrace.tracer.framescrapper', 'FrameScrapper')),
+        (FrameScrapper(), ('pydoctrace.tracer.framescrapper', 'FrameScrapper')),
         (str, ('builtins', 'str')),
         ('', ('builtins', 'str')),
     ],
 )
-def test_framescrapperpre311__get_owner_class_metadata(owner: object, expected_class_metadata: Tuple[str, str]):
-    assert FrameScrapperPrePy311()._get_owner_class_metadata(owner) == expected_class_metadata
+def test_framescrapper__get_owner_class_metadata(owner: object, expected_class_metadata: Tuple[str, str]):
+    assert FrameScrapper()._get_owner_class_metadata(owner) == expected_class_metadata
 
 
 @dataclass(order=True, unsafe_hash=True)
@@ -53,23 +51,22 @@ class ContactManager:
 @mark.parametrize(
     ['method', 'owner', 'expected_fq_method_name'],
     [
-        (Person.__init__, Person, 'test_pre311.Person.__init__'),
-        (Person.__hash__, Person, 'test_pre311.Person.__hash__'),
-        (Person.__repr__, Person, 'test_pre311.Person.__repr__'),
-        (Person.__eq__, Person, 'test_pre311.Person.__eq__'),
-        (Person.fullname, Person, 'test_pre311.Person.fullname'),
+        (Person.__init__, Person, 'test_framescrapper.Person.__init__'),
+        (Person.__hash__, Person, 'test_framescrapper.Person.__hash__'),
+        (Person.__repr__, Person, 'test_framescrapper.Person.__repr__'),
+        (Person.__eq__, Person, 'test_framescrapper.Person.__eq__'),
+        (Person.fullname, Person, 'test_framescrapper.Person.fullname'),
         (Person.__repr__, __builtins__, 'builtins.__repr__'),
         (
             ContactManager.InnerContact.__init__,
             ContactManager.InnerContact,
-            'test_pre311.ContactManager.InnerContact.__init__',
+            'test_framescrapper.ContactManager.InnerContact.__init__',
         ),
     ],
 )
-def test_framescrapperpre311__dataclass_fq_method(method: Callable, owner: object, expected_fq_method_name: str):
+def test_framescrapper__dataclass_fq_method(method: Callable, owner: object, expected_fq_method_name: str):
     assert (
-        FrameScrapperPrePy311()._dataclass_fq_method(method.__module__, method.__qualname__, owner)
-        == expected_fq_method_name
+        FrameScrapper()._dataclass_fq_method(method.__module__, method.__qualname__, owner) == expected_fq_method_name
     )
 
 
@@ -97,14 +94,14 @@ class ModernNamedTuple(NamedTuple):
         (ModernNamedTuple(42), True),
     ],
 )
-def test_framescrapperpre311__is_a_named_tuple(entry: object, expected_is_named_tuple: bool):
-    assert FrameScrapperPrePy311()._is_a_named_tuple(entry) is expected_is_named_tuple
+def test_framescrapper__is_a_named_tuple(entry: object, expected_is_named_tuple: bool):
+    assert FrameScrapper()._is_a_named_tuple(entry) is expected_is_named_tuple
 
 
 @mark.parametrize(
     ['method', 'expected_fq_method_name'],
     [
-        (ModernNamedTuple.has_value, 'test_pre311.ModernNamedTuple.has_value'),
+        (ModernNamedTuple.has_value, 'test_framescrapper.ModernNamedTuple.has_value'),
         # the following methods refer to functions defined in the collections.namedtuple module
         (ModernNamedTuple._asdict, 'collections.namedtuple._asdict'),
         (ModernNamedTuple._make, 'collections.namedtuple._make'),
@@ -113,9 +110,9 @@ def test_framescrapperpre311__is_a_named_tuple(entry: object, expected_is_named_
         (ModernNamedTuple.__getnewargs__, 'collections.namedtuple.__getnewargs__'),
     ],
 )
-def test_framescrapperpre311__namedtuple_fq_method(method, expected_fq_method_name: str):
+def test_framescrapper__namedtuple_fq_method(method, expected_fq_method_name: str):
     assert (
-        FrameScrapperPrePy311()._namedtuple_fq_method(
+        FrameScrapper()._namedtuple_fq_method(
             method.__module__,
             method.__qualname__,
         )
@@ -134,14 +131,14 @@ def test_framescrapperpre311__namedtuple_fq_method(method, expected_fq_method_na
         ),
     ],
 )
-def test_framescrapperpre311__create_components_for_locals(function_qualname: str, expected_component_qualname: str):
-    assert FrameScrapperPrePy311()._create_components_for_locals(function_qualname) == expected_component_qualname
+def test_framescrapper__create_components_for_locals(function_qualname: str, expected_component_qualname: str):
+    assert FrameScrapper()._create_components_for_locals(function_qualname) == expected_component_qualname
 
 
-def test_framescrapperpre311__not_yet_parsed_entries_iter_empty_cache():
+def test_framescrapper__not_yet_parsed_entries_iter_empty_cache():
     namespace = {'str': str, 'print': print}
     parsed_types = set()
-    frame_scrapper = FrameScrapperPrePy311()
+    frame_scrapper = FrameScrapper()
     entry_iter = frame_scrapper._not_yet_parsed_entries_iter(namespace, parsed_types=parsed_types)
 
     entry_name, entry = next(entry_iter)
@@ -160,9 +157,9 @@ def test_framescrapperpre311__not_yet_parsed_entries_iter_empty_cache():
         next(entry_iter)
 
 
-def test_framescrapperpre311__not_yet_parsed_entries_iter_with_cache():
+def test_framescrapper__not_yet_parsed_entries_iter_with_cache():
     namespace = {'str': str, 'print': print}
-    frame_scrapper = FrameScrapperPrePy311()
+    frame_scrapper = FrameScrapper()
     parsed_types = set()
     parsed_types.add(frame_scrapper._parsed_entry_key(print))
     entry_iter = frame_scrapper._not_yet_parsed_entries_iter(namespace, parsed_types=parsed_types)

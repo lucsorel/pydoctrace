@@ -7,7 +7,7 @@ from typing import Iterator, Tuple
 COMPONENT_LOCALS_PATTERN: Pattern = re_compile(r'([^\.]+)\.<locals>')
 
 
-class FrameScrapperPrePy311:
+class FrameScrapper:
     """
     Uses frame and associated code objects to scrap the full domain and name of
     a called block of code.
@@ -64,7 +64,12 @@ class FrameScrapperPrePy311:
         return COMPONENT_LOCALS_PATTERN.sub(locals_dot_remover, function_qualname)
 
     def _iter_over_type_namespaces(
-        self, owner: object, owner_members: dict, function_code, *, parsed_types: set, in_locals: bool = True
+        self,
+        owner: object,
+        owner_members: dict,
+        function_code,
+        *,
+        parsed_types: set,
     ) -> Iterator[str]:
         """
         Looks for the function of the method corresponding to the given code in the classes of the globals.
@@ -73,9 +78,8 @@ class FrameScrapperPrePy311:
         for _, member in self._not_yet_parsed_entries_iter(owner_members, parsed_types=parsed_types):
             if getattr(member, '__code__', None) == function_code:
                 # owner_module, owner_qname = self._get_owner_class_metadata(owner)
-                # scope = 'locals' if in_locals else 'globals'
-                # print(_, member.__module__, member.__qualname__, owner_module, owner_qname, scope, sep=';')
-                # # print(f'{_=}', f'{member.__module__=}', f'{member.__qualname__=}', f'{owner_class=}', f'{owner_module=}', f'{owner_qname=}', f'{scope=}')
+                # print(_, member.__module__, member.__qualname__, owner_module, owner_qname, sep=';')
+                # print(f'{_=}', f'{member.__module__=}', f'{member.__qualname__=}', f'{owner_class=}', f'{owner_module=}', f'{owner_qname=}')
 
                 method_qualname = self._create_components_for_locals(member.__qualname__)
                 if method_qualname.startswith('__create_fn__<locals>'):
@@ -92,7 +96,6 @@ class FrameScrapperPrePy311:
                     dict(getmembers(member)),
                     function_code,
                     parsed_types=parsed_types,
-                    in_locals=in_locals,
                 )
 
     def scrap_callable_domain_and_name(self, called_frame: FrameType) -> str:
@@ -106,24 +109,14 @@ class FrameScrapperPrePy311:
         ):
             return f'{namedtuple_class.__module__}.{namedtuple_class.__qualname__}.{callable_name}'
 
-        # searches for the function name and code in the globals of the calling frame
-        # TODO searches in the builtins for speed sake? Or is it already done here?
         calling_frame = called_frame.f_back
         calling_frame_globals = calling_frame.f_globals
         calling_frame_locals = calling_frame.f_locals
 
-        frame_locals = {**calling_frame_locals, '__doc__': None}
+        # merges the definitions of the locals and the globals into one namespace
+        calling_frame_namespace = {**calling_frame_locals, **calling_frame_globals, '__builtins__': None}
         callable_domain_and_name = next(
-            self._iter_over_type_namespaces(None, frame_locals, callable_code, parsed_types=set()), None
-        )
-        if callable_domain_and_name is not None:
-            return callable_domain_and_name
-
-        # searches the method call in the calling frame's globals otherwise
-        frame_globals = {**calling_frame_globals, '__doc__': None, '__builtins__': None}
-        callable_domain_and_name = next(
-            self._iter_over_type_namespaces(None, frame_globals, callable_code, parsed_types=set(), in_locals=False),
-            None,
+            self._iter_over_type_namespaces(None, calling_frame_namespace, callable_code, parsed_types=set()), None
         )
         if callable_domain_and_name is not None:
             return callable_domain_and_name
