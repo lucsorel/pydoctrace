@@ -169,6 +169,15 @@ def test_plantuml_component_exporter_on_return(exporter_without_writer: PlantUML
     assert Return(1) in call_interaction.responses
 
 
+def test_plantuml_component_exporter_on_unhandled_error_end(exporter_without_writer: PlantUMLComponentExporter):
+    called = CallEnd('math_cli.compute', ('math_cli', 'compute'), 'factorial', 4)
+    validation_error = Error('ValueError', 'must be a positive integer')
+    assert exporter_without_writer.unhandled_error_class_name is None
+
+    exporter_without_writer.on_unhandled_error_end(called, validation_error)
+    assert exporter_without_writer.unhandled_error_class_name == 'ValueError'
+
+
 @mark.parametrize(
     ['functions', 'expected_root_module'],
     [
