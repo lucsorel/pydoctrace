@@ -1,11 +1,14 @@
 from collections import namedtuple
 from dataclasses import dataclass
 from inspect import getmembers
+from types import CodeType
 from typing import Callable, NamedTuple, Tuple, Type
 
 from pytest import mark, raises
 
 from pydoctrace.tracer.framescrapper import FrameScrapper
+
+from tests.mockedinstance import MockedInstance
 
 
 @mark.parametrize(
@@ -44,6 +47,12 @@ class Person:
 
 
 class ContactManager:
+    def is_none(self) -> bool:
+        """
+        Just a method
+        """
+        return self is None
+
     @dataclass
     class InnerContact:
         fullname: str
@@ -207,12 +216,111 @@ def test_framescrapper__not_yet_parsed_entries_iter_with_cache():
         (
             None,
             {'ContactManager': ContactManager},
+            ContactManager.is_none.__code__,
+            'test_framescrapper.ContactManager.is_none',
+        ),
+        (
+            None,
+            {'ContactManager': ContactManager},
             ContactManager.InnerContact.__init__.__code__,
             'test_framescrapper.ContactManager.InnerContact.__init__',
         ),
     ],
 )
-def test_framescrapper__iter_over_type_namespaces(owner, namespace, codeobject, expected_fq_method_name):
+def test_framescrapper__iter_over_type_namespaces(
+    owner: object, namespace: dict, codeobject: CodeType, expected_fq_method_name: str
+):
     frame_scrapper = FrameScrapper()
     fullqualname_iter = frame_scrapper._iter_over_type_namespaces(owner, namespace, codeobject, parsed_types=set())
     assert next(fullqualname_iter, None) == expected_fq_method_name
+
+
+def noop():
+    pass
+
+
+@mark.parametrize(
+    ['called_frame_dict', 'expected_fq_method_name'],
+    [
+        # named tuple creation
+        (
+            {
+                'f_code': {'co_name': '__new__'},
+                'f_globals': {
+                    '_tuple_new': ModernNamedTuple.__new__,
+                },
+                'f_locals': {
+                    '_cls': ModernNamedTuple,
+                },
+            },
+            'test_framescrapper.ModernNamedTuple.__new__',
+        ),
+        (
+            {
+                'f_code': {'co_name': '__new__'},
+                'f_globals': {
+                    '_tuple_new': OldieNamedTuple.__new__,
+                },
+                'f_locals': {
+                    '_cls': OldieNamedTuple,
+                },
+            },
+            'test_framescrapper.OldieNamedTuple.__new__',
+        ),
+        # function retrieval (usually imported in the globals of the calling frame)
+        (
+            {
+                'f_code': noop.__code__,
+                'f_globals': {},
+                'f_back': {
+                    'f_globals': {
+                        'noop': noop,
+                    },
+                    'f_locals': {},
+                },
+            },
+            'test_framescrapper.noop',
+        ),
+        # function retrieval (defined in the locals of the calling frame)
+        (
+            {
+                'f_code': noop.__code__,
+                'f_globals': {},
+                'f_back': {
+                    'f_globals': {},
+                    'f_locals': {
+                        'noop': noop,
+                    },
+                },
+            },
+            'test_framescrapper.noop',
+        ),
+        # fallback retrieval
+        (
+            {
+                'f_code': noop.__code__,
+                'f_globals': {'__name__': 'called.frame.module'},
+                'f_back': {
+                    'f_globals': {},
+                    'f_locals': {},
+                },
+            },
+            'called.frame.module.noop',
+        ),
+        # method retrieval
+        (
+            {
+                'f_code': ContactManager.is_none.__code__,
+                'f_globals': {},
+                'f_back': {
+                    'f_globals': {'ContactManager': ContactManager},
+                    'f_locals': {},
+                },
+            },
+            'test_framescrapper.ContactManager.is_none',
+        ),
+    ],
+)
+def test_framescrapper_scrap_callable_domain_and_name(called_frame_dict, expected_fq_method_name):
+    called_frame = MockedInstance(called_frame_dict)
+    assert FrameScrapper().scrap_callable_domain_and_name(called_frame) == expected_fq_method_name

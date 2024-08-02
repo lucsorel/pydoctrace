@@ -109,12 +109,10 @@ class FrameScrapper:
         ):
             return f'{namedtuple_class.__module__}.{namedtuple_class.__qualname__}.{callable_name}'
 
-        calling_frame = called_frame.f_back
-        calling_frame_globals = calling_frame.f_globals
-        calling_frame_locals = calling_frame.f_locals
-
         # merges the definitions of the locals and the globals into one namespace
-        calling_frame_namespace = {**calling_frame_locals, **calling_frame_globals, '__builtins__': None}
+        calling_frame = called_frame.f_back
+        calling_frame_namespace = {**calling_frame.f_locals, **calling_frame.f_globals, '__builtins__': None}
+
         callable_domain_and_name = next(
             self._iter_over_type_namespaces(None, calling_frame_namespace, callable_code, parsed_types=set()), None
         )
