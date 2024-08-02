@@ -106,6 +106,9 @@ You can then view these files either:
 * using an extension for your IDE: `jebbs.plantuml` for Codium / vsCode, `7017-plantuml-integration` for PyCharm
 * online at www.plantuml.com/plantuml/uml/
 
+Tracing the code execution involves some additional CPU workload, necessarily slowing down the total code execution.
+You should trace only temporarily some code in order to document its execution, or in documentation tests.
+
 ### Customize the filename
 
 The `export_file_path_tpl` attribute of the decorators allows you to define another file path and name:
