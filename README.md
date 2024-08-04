@@ -261,7 +261,7 @@ pytest -v
 Code coverage (with [missed branch statements](https://pytest-cov.readthedocs.io/en/latest/config.html?highlight=--cov-branch)):
 
 ```sh
-poetry run pytest -v --cov=pydoctrace --cov-branch --cov-report term-missing --cov-fail-under 85
+poetry run pytest -v --cov=pydoctrace --cov-branch --cov-report term-missing --cov-fail-under 86
 ```
 
 # Changelog

@@ -7,7 +7,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
-  MIN_CODE_COVERAGE_PERCENT: 85
+  MIN_CODE_COVERAGE_PERCENT: 86
 
 jobs:
   build:
