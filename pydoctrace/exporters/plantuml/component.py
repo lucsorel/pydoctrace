@@ -338,8 +338,8 @@ class PlantUMLComponentExporter(Exporter):
 
             raiseds = [response for response in responses if isinstance(response, Raised)]
             if raiseds:
-                raiseds_arrow = f"{'<..' if are_in_same_module else '<.'}[thickness=2]"
-                raiseds_label = f" #line:darkred;text:darkred : {self.build_arrow_label_ranks([f'{exit_raised.rank}:{exit_raised.error}' for exit_raised in raiseds])}"
+                raiseds_arrow = f'{"<.." if are_in_same_module else "<."}[thickness=2]'
+                raiseds_label = f' #line:darkred;text:darkred : {self.build_arrow_label_ranks([f"{exit_raised.rank}:{exit_raised.error}" for exit_raised in raiseds])}'
 
                 self.io_sink.write(
                     self.fmt.format(

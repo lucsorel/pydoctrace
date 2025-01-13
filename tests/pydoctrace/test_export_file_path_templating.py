@@ -84,18 +84,18 @@ class CompareAndDelete:
         output_contents = list(
             self.comparison.comparison_folder_path.rglob(self.comparison.output_contents_filename_pattern)
         )
-        assert (
-            len(output_contents) == 1
-        ), f'only one file expected for pattern {self.comparison.comparison_folder_path / self.comparison.output_contents_filename_pattern}'
+        assert len(output_contents) == 1, (
+            f'only one file expected for pattern {self.comparison.comparison_folder_path / self.comparison.output_contents_filename_pattern}'
+        )
         output_contents_path = output_contents[0]
 
         # ensures that the '${datetime_millis}' tag was correctly replaced
         template_file_name = self.comparison.output_contents_filename_pattern.replace('-*-', '-${datetime_millis}-')
         before_filename = Exporter._template_dynamic_tags(template_file_name, before)
         after_filename = Exporter._template_dynamic_tags(template_file_name, after)
-        assert (
-            before_filename <= output_contents_path.name <= after_filename
-        ), 'the ${datetime_millis} tag must be framed'
+        assert before_filename <= output_contents_path.name <= after_filename, (
+            'the ${datetime_millis} tag must be framed'
+        )
 
         # compares the contents
         expected_contents_path = self.comparison.comparison_folder_path / self.comparison.expected_contents_filename
