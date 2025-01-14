@@ -15,39 +15,39 @@ from pydoctrace.callfilter.presets import (
 
 
 def test_filter_builtins_isinstance_out():
-    assert EXCLUDE_BUILTINS_PRESET.exclude_call(
-        isinstance.__module__.split('.'), isinstance.__name__, 1
-    ), 'call to isinstance must not be traced with the builtins preset'
+    assert EXCLUDE_BUILTINS_PRESET.exclude_call(isinstance.__module__.split('.'), isinstance.__name__, 1), (
+        'call to isinstance must not be traced with the builtins preset'
+    )
 
 
 def test_filter_builtins_function_in():
-    assert not EXCLUDE_BUILTINS_PRESET.exclude_call(
-        ('package', 'module'), 'function', 1
-    ), 'call to function must be traced with the builtins preset'
+    assert not EXCLUDE_BUILTINS_PRESET.exclude_call(('package', 'module'), 'function', 1), (
+        'call to function must be traced with the builtins preset'
+    )
 
 
 def test_filter_stdlib_isinstance_out():
-    assert EXCLUDE_STDLIB_PRESET.exclude_call(
-        isinstance.__module__.split('.'), isinstance.__name__, 1
-    ), 'call to isinstance must not be traced with the stdlib preset'
+    assert EXCLUDE_STDLIB_PRESET.exclude_call(isinstance.__module__.split('.'), isinstance.__name__, 1), (
+        'call to isinstance must not be traced with the stdlib preset'
+    )
 
 
 def test_filter_stdlib_function_in():
-    assert not EXCLUDE_STDLIB_PRESET.exclude_call(
-        ('package', 'module'), 'function', 1
-    ), 'call to function not traced with the stdlib preset'
+    assert not EXCLUDE_STDLIB_PRESET.exclude_call(('package', 'module'), 'function', 1), (
+        'call to function not traced with the stdlib preset'
+    )
 
 
 def test_filter_test_isinstance_in():
-    assert not EXCLUDE_TESTS_PRESET.exclude_call(
-        isinstance.__module__.split('.'), isinstance.__name__, 1
-    ), 'call to isinstance must be traced with the tests preset'
+    assert not EXCLUDE_TESTS_PRESET.exclude_call(isinstance.__module__.split('.'), isinstance.__name__, 1), (
+        'call to isinstance must be traced with the tests preset'
+    )
 
 
 def test_filter_test_raises_in():
-    assert EXCLUDE_TESTS_PRESET.exclude_call(
-        raises.__module__.split('.'), raises.__name__, 1
-    ), 'call to raises must not be traced with the tests preset'
+    assert EXCLUDE_TESTS_PRESET.exclude_call(raises.__module__.split('.'), raises.__name__, 1), (
+        'call to raises must not be traced with the tests preset'
+    )
 
 
 @mark.parametrize(

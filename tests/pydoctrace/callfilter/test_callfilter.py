@@ -21,9 +21,9 @@ def test_callfilter_inclusion_over_exclusion_at_the_preset_level():
     )
     callfilter = CallFilter((exclude_package_include_function_preset,))
     assert callfilter.should_trace_call(('my_package', 'my_module'), 'my_function', 1), 'my_function should be traced'
-    assert not callfilter.should_trace_call(
-        ('my_package', 'my_module'), 'my_other_function', 1
-    ), 'my_other_function should not be traced'
+    assert not callfilter.should_trace_call(('my_package', 'my_module'), 'my_other_function', 1), (
+        'my_other_function should not be traced'
+    )
 
 
 def test_callfilter_exclusion_over_inclusion_across_presets():
@@ -40,14 +40,14 @@ def test_callfilter_exclusion_over_inclusion_across_presets():
     )
 
     callfilter = CallFilter((excluding_preset, including_preset))
-    assert not callfilter.should_trace_call(
-        ('my_package', 'my_module'), 'my_function', 1
-    ), 'my_function should not be traced'
+    assert not callfilter.should_trace_call(('my_package', 'my_module'), 'my_function', 1), (
+        'my_function should not be traced'
+    )
 
     other_filter = CallFilter((including_preset, excluding_preset))
-    assert not other_filter.should_trace_call(
-        ('my_package', 'my_module'), 'my_function', 1
-    ), 'my_function should not be traced'
+    assert not other_filter.should_trace_call(('my_package', 'my_module'), 'my_function', 1), (
+        'my_function should not be traced'
+    )
 
 
 @mark.parametrize(

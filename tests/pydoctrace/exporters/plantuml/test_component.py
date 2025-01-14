@@ -401,9 +401,9 @@ def test_module_structure_visitor_visit_module(
     for line_index, (plantuml_line, expected_line) in enumerate(
         zip(module_visitor.visit_module(visited_module, parent_module_path, indentation_level), expected_plantuml_lines)
     ):
-        assert (
-            plantuml_line == expected_line
-        ), f"at index {line_index}, '{plantuml_line}' is expected to be '{expected_line}'"
+        assert plantuml_line == expected_line, (
+            f"at index {line_index}, '{plantuml_line}' is expected to be '{expected_line}'"
+        )
 
 
 @mark.parametrize(
@@ -461,9 +461,9 @@ def test_module_structure_visitor_visit_functions(
     for line_index, (plantuml_line, expected_line) in enumerate(
         zip(module_visitor.visit_functions(visited_functions, indentation_level), expected_plantuml_lines)
     ):
-        assert (
-            plantuml_line == expected_line
-        ), f"at index {line_index}, '{plantuml_line}' is expected to be '{expected_line}'"
+        assert plantuml_line == expected_line, (
+            f"at index {line_index}, '{plantuml_line}' is expected to be '{expected_line}'"
+        )
 
 
 @mark.parametrize(
