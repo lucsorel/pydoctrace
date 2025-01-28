@@ -7,6 +7,7 @@ concurrency:
   cancel-in-progress: true
 
 env:
+  POETRY_VERSION: 1.8.3
   MIN_CODE_COVERAGE_PERCENT: 86
 
 jobs:
@@ -30,7 +31,7 @@ jobs:
       - name: Install poetry
         uses: abatilo/actions-poetry@v4
         with:
-          poetry-version: 1.8.3
+          poetry-version: ${{ env.POETRY_VERSION }}
 
       - name: Make pipx-installed packages available in the $PATH
         if: runner.os != 'Windows'
