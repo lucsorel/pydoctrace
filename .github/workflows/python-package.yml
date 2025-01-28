@@ -21,16 +21,20 @@ jobs:
         with:
           python-version-file: '.python-version'
 
-      - name: Install poetry
-        uses: abatilo/actions-poetry@v3
-        with:
-          poetry-version: 1.8.3
-
       - name: Define a cache for the virtual environment based on the dependencies lock file
         uses: actions/cache@v3
         with:
-          path: ./.venv
-          key: venv-${{ hashFiles('poetry.lock') }}
+          path: .venv
+          key: venv-${{ runner.os }}-${{ hashFiles('poetry.lock') }}
+
+      - name: Install poetry
+        uses: abatilo/actions-poetry@v4
+        with:
+          poetry-version: 1.8.3
+
+      - name: Make pipx-installed packages available in the $PATH
+        if: runner.os != 'Windows'
+        run: echo "${HOME}/.local/bin" >> $GITHUB_PATH
 
       - name: Install project dependencies
         run: poetry install --without lint
