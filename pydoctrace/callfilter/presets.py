@@ -78,8 +78,9 @@ EXCLUDE_STDLIB_PRESET = Preset(
 )
 
 EXCLUDE_TESTS_PRESET = Preset(
-    exclude_call=lambda module_parts, *args: len(module_parts) > 0
-    and module_parts[0] in ('tests', '_pytest', 'pytest', 'unittest', 'doctest')
+    exclude_call=lambda module_parts, *args: (
+        len(module_parts) > 0 and module_parts[0] in ('tests', '_pytest', 'pytest', 'unittest', 'doctest')
+    )
 )
 
 TRACE_ALL_PRESET = Preset(exclude_call=lambda *args: False)
