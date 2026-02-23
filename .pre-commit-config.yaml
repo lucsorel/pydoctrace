@@ -27,13 +27,13 @@ repos:
         additional_dependencies: ['@commitlint/config-angular']
 
 -   repo: https://github.com/PyCQA/isort
-    rev: 7.0.0
+    rev: 8.0.0
     hooks:
     -   id: isort
         additional_dependencies: [toml]
 
 -   repo: https://github.com/astral-sh/ruff-pre-commit
-    rev: v0.15.1
+    rev: v0.15.2
     hooks:
     -   id: ruff
     -   id: ruff-format
