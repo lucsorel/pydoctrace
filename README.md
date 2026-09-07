@@ -20,6 +20,7 @@ Here are the diagrams produced by 2 different implementations of the `factorial`
 ```python
 from pydoctrace.doctrace import trace_to_sequence_puml
 
+
 @trace_to_sequence_puml
 def factorial_recursive(value: int) -> int:
     if value <= 1:
@@ -33,6 +34,7 @@ def factorial_recursive(value: int) -> int:
 
 ```python
 from pydoctrace.doctrace import trace_to_component_puml
+
 
 @trace_to_component_puml
 def factorial_reduce_multiply(value: int) -> int:
@@ -81,14 +83,17 @@ Import a decorator and apply it to the functions whom execution you want to trac
 # in my_package/my_module.py
 from pydoctrace.doctrace import trace_to_component_puml, trace_to_sequence_puml
 
+
 def main(parameter):
     validate(parameter)
     do_something(parameter)
+
 
 @trace_to_component_puml
 def validate(parameter):
     validate_is_not_none(parameter)
     validate_is_in_database(parameter)
+
 
 @trace_to_sequence_puml
 def do_something(parameter):
@@ -114,20 +119,16 @@ The `export_file_path_tpl` attribute of the decorators allows you to define anot
 # in my_package/my_module.py
 from pydoctrace.doctrace import trace_to_component_puml, trace_to_sequence_puml
 
+
 # will create a 'validate-component.puml' file in the 'doc/my_package-my_module' folder
 # (pydoctrace will create the subdirectories if necessary)
-@trace_to_component_puml(
-    export_file_path_tpl='doc/my_package-my_module/validate-component.puml'
-)
-def validate(parameter):
-    ...
+@trace_to_component_puml(export_file_path_tpl='doc/my_package-my_module/validate-component.puml')
+def validate(parameter): ...
+
 
 # will create a 'my_package.my_module/do_something-2024-02-27_19.16.09_473-sequence.puml' file
-@trace_to_sequence_puml(
-    export_file_path_tpl='${function_module}/${function_name}-${datetime_millis}-sequence.puml'
-)
-def do_something(parameter):
-    ...
+@trace_to_sequence_puml(export_file_path_tpl='${function_module}/${function_name}-${datetime_millis}-sequence.puml')
+def do_something(parameter): ...
 ```
 
 As you can see, you can use the following template tags in the file name:
@@ -162,45 +163,59 @@ from pydoctrace.callfilter.presets import (
     TRACE_ALL_PRESET,
 )
 
+
 # an empty presets list traces everything
 @trace_to_component_puml(filter_presets=[])
-def validate(parameter):
-    ...
+def validate(parameter): ...
+
+
 # or you can be explicit
 from pydoctrace.callfilter.presets import TRACE_ALL_PRESET
+
+
 @trace_to_component_puml(filter_presets=[TRACE_ALL_PRESET])
-def validate(parameter):
-    ...
+def validate(parameter): ...
+
 
 # filter at a custom callstack level
 from pydoctrace.callfilter.presets import EXCLUDE_CALL_DEPTH_PRESET_FACTORY
+
 ABOVE_3_PRESET = EXCLUDE_CALL_DEPTH_PRESET_FACTORY(3)
+
+
 @trace_to_component_puml(filter_presets=[ABOVE_3_PRESET])
 def call():
     call_1()
 
+
 def call_1():
     call_2()
+
 
 def call_2():
     call_3()
 
-def call_3(): # will not be traced in the diagram
+
+def call_3():  # will not be traced in the diagram
     ...
+
 
 # documents the behavior of do_something without the noise of
 # the test framework nor the standard libray
 from my_package.my_module import do_something
 from pydoctrace.callfilter.presets import EXCLUDE_STDLIB_PRESET, EXCLUDE_TESTS_PRESET
+
+
 @trace_to_component_puml(filter_presets=[EXCLUDE_STDLIB_PRESET, EXCLUDE_TESTS_PRESET])
 def test_do_something():
     assert do_something('param') is not None
+
 
 # for test-generated documentation, you can also use the decorator programmatically
 def test_do_something():
     traceable_do_something = trace_to_component_puml(
         export_file_path_tpl='doc/${function_module}/${function_name}-component.puml',
-        filter_presets=[EXCLUDE_STDLIB_PRESET, EXCLUDE_TESTS_PRESET, ABOVE_3_PRESET]
+        filter_presets=[EXCLUDE_STDLIB_PRESET, EXCLUDE_TESTS_PRESET, ABOVE_3_PRESET],
     )(do_something)
 
     assert traceable_do_something('param') is not None
