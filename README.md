@@ -66,8 +66,8 @@ Use your favorite dependency manager to install `pydoctrace`:
 # using pip
 pip install pydoctrace
 
-# using poetry
-poetry add pydoctrace
+# using uv
+uv add pydoctrace
 
 # using pipenv
 pipenv install pydoctrace
@@ -248,8 +248,8 @@ Therefore, a warning is emitted when `pydoctrace` is used in a debug mode (and d
 # Tests
 
 ```sh
-# directly with poetry
-poetry run pytest -v
+# directly with uv
+uv run pytest -v
 
 # in an activated virtual environment
 pytest -v
@@ -258,7 +258,7 @@ pytest -v
 Code coverage (with [missed branch statements](https://pytest-cov.readthedocs.io/en/latest/config.html?highlight=--cov-branch)):
 
 ```sh
-poetry run pytest -v --cov=pydoctrace --cov-branch --cov-report term-missing --cov-fail-under 82
+uv run pytest -v --cov=pydoctrace --cov-branch --cov-report term-missing --cov-fail-under 82
 ```
 
 # Changelog
@@ -299,7 +299,7 @@ The hooks are declared in the [.pre-commit-config.yaml](.pre-commit-config.yaml)
 When you contribute, set the git hooks (`pre-commit` and `commit-msg` types) on your development environment:
 
 ```sh
-poetry run pre-commit install
+uv run pre-commit install
 ```
 
 Before committing, you can check your changes manually with:
@@ -309,10 +309,10 @@ Before committing, you can check your changes manually with:
 git add -A
 
 # run all hooks
-poetry run pre-commit run --all-files
+uv run pre-commit run --all-files
 
 # run a specific hook
-poetry run pre-commit run ruff --all-files
+uv run pre-commit run ruff --all-files
 ```
 
 ### Commit messages

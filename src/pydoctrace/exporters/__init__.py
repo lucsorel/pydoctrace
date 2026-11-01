@@ -97,7 +97,7 @@ class Exporter:
 
     @classmethod
     @contextmanager
-    def export_manager_factory(exporter_class: 'Exporter', export_file_path: str) -> Iterator['Exporter']:
+    def export_manager_factory(cls: 'Exporter', export_file_path: str) -> Iterator['Exporter']:
         """
         This factory function is meant to be used as a context manager to provide
         an exporter instance usable during the lifetime of the export context.
@@ -108,14 +108,14 @@ class Exporter:
         """
 
         # hydrates datetime markers in the file name template
-        export_file_path = exporter_class._template_dynamic_tags(export_file_path, datetime.utcnow())
+        export_file_path = cls._template_dynamic_tags(export_file_path, datetime.utcnow())
 
         # creates the directories leading to the file
         Path(export_file_path).parent.mkdir(parents=True, exist_ok=True)
 
         # opens the contents file in write mode and yields the exporter that can write into it
         with open(export_file_path, 'w', encoding='utf8') as diagram_file:
-            exporter = exporter_class(diagram_file)
+            exporter = cls(diagram_file)
             yield exporter
 
 

@@ -1,29 +1,39 @@
-[tool.poetry]
+[project]
 name = "pydoctrace"
 version = "0.3.0"
 description = "Generate sequence diagrams by tracing Python code execution"
 keywords = ["sequence diagram", "component diagram", "documentation", "tracing", "doc-as-code", "PlantUML"]
 readme = "README.md"
-repository = "https://github.com/lucsorel/pydoctrace"
-authors = ["Luc Sorel-Giffo"]
-maintainers = ["Luc Sorel-Giffo"]
+authors = [{ name = "Luc Sorel-Giffo" }]
+maintainers = [{ name = "Luc Sorel-Giffo" }]
 license = "MIT"
+requires-python = ">=3.10.9"
+dependencies = []
 
-[tool.poetry.dependencies]
-python = "^3.8"
+[project.urls]
+Repository = "https://github.com/lucsorel/pydoctrace.git"
+Issues = "https://github.com/lucsorel/pydoctrace/issues"
 
-[tool.poetry.group.dev.dependencies]
-pytest = "^8.0.2"
-pytest-cov = "^4.1.0"
+[dependency-groups]
+dev = [
+    "pytest>=8.3.4",
+    "pytest-cov>=4.0.0",
+]
+lint = ["pre-commit>=4.5.1"]
+package = [
+    "python-semantic-release>=10.5.3",
+]
 
-[tool.poetry.group.lint.dependencies]
-pre-commit = "^3.5"
+[tool.uv]
+default-groups = ["dev", "lint"]
+exclude-newer = "3 days"
 
 [tool.pytest.ini_options]
 console_output_style = "count"
+pythonpath = ["src"]
 
 [tool.isort]
-py_version=38
+py_version=310
 # maintain consistency with other quality tools
 line_length = 120
 # consistency with ruff-format: mode 3
@@ -41,11 +51,16 @@ sections = ["FUTURE", "STDLIB", "THIRDPARTY", "FIRSTPARTY", "LOCALFOLDER", "TEST
 known_tests = ["tests"]
 
 [tool.ruff]
-target-version = "py38"
+target-version = "py310"
 # maintain consistency with other quality tools
 line-length = 120
 # automatically fixes when possible
 fix = true
+
+[tool.ruff.format]
+indent-style = "space"
+line-ending = "lf"
+quote-style = "single"
 
 [tool.ruff.lint]
 # activated families of verifications (https://beta.ruff.rs/docs/rules/
@@ -64,12 +79,6 @@ forced-separate = ["tests"]
 # provided a more meaningful parameter name in the @classmethod than "cls"
 "pydoctrace/exporters/__init__.py" = ["N804"]
 
-[tool.ruff.format]
-indent-style = "space"
-line-ending = "lf"
-quote-style = "single"
-
-
 [build-system]
-requires = ["poetry-core"]
-build-backend = "poetry.core.masonry.api"
+requires = ["uv_build>=0.13.6,<0.14.0"]
+build-backend = "uv_build"
