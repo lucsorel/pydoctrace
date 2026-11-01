@@ -13,6 +13,7 @@ repos:
     # prevents large files from being committed (>100kb)
     -   id: check-added-large-files
         args: [--maxkb=100]
+        exclude: uv\.lock
     # enforce the naming conventions of test scripts
     -   id: name-tests-test
         # tests match test_.*\.py
@@ -24,7 +25,7 @@ repos:
     hooks:
     -   id: commitlint
         stages: [commit-msg]
-        additional_dependencies: ['@commitlint/config-angular']
+        additional_dependencies: ['@commitlint/config-conventional']
 
 -   repo: https://github.com/PyCQA/isort
     rev: 8.0.1

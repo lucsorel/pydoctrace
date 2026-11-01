@@ -100,9 +100,10 @@ class CompareAndDelete:
         # compares the contents
         expected_contents_path = self.comparison.comparison_folder_path / self.comparison.expected_contents_filename
 
-        with open(expected_contents_path, encoding='utf8') as expected_contents, open(
-            output_contents_path, encoding='utf8'
-        ) as output_contents:
+        with (
+            open(expected_contents_path, encoding='utf8') as expected_contents,
+            open(output_contents_path, encoding='utf8') as output_contents,
+        ):
             for line_index, (expected_line, produced_line) in enumerate(
                 zip(expected_contents.readlines(), output_contents.readlines())
             ):
